@@ -2,6 +2,8 @@ Runes:
   Angler: #0.2 %
     text: "&b&lAngler"
     chance-drop: 0.2
+    effects: # % for level
+      exp-increase: 4
   AntiGravThrow: #0.4 %
     text: "Anti-Grav Throw"
     chance-drop: 0.4

@@ -13,11 +13,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,54 +36,95 @@ public class Events implements Listener {
         Events.plugin = plugin;
     }
 
-    String[] material = {"COAL_ORE", "DEEPLATE_COAL_ORE", "COPPER_ORE", "DEEPLATE_COPPER_ORE", "IRON_ORE", "DEEPLATE_IRON_ORE",
-            "GOLD_ORE", "DEEPLATE_GOLD_ORE", "REDSTONE_ORE", "DEEPLATE_REDSTONE_ORE", "LAPIS_ORE", "DEEPLATE_LAPIS_ORE",
-            "EMERALD_ORE", "DEEPLATE_EMERALD_ORE", "DIAMOND_ORE", "DEEPLATE_DIAMOND_ORE"};
-    String[] materialNether = {"NETHER_GOLD_ORE", "NETHER_QUARTZ_ORE", "ANCIENT_DEBRIS"};
+    String[] material = {"COAL_ORE", "DEEPSLATE_COAL_ORE", "COPPER_ORE", "DEEPSLATE_COPPER_ORE", "IRON_ORE", "DEEPSLATE_IRON_ORE",
+            "GOLD_ORE", "DEEPSLATE_GOLD_ORE", "REDSTONE_ORE", "DEEPSLATE_REDSTONE_ORE", "LAPIS_ORE", "DEEPSLATE_LAPIS_ORE",
+            "EMERALD_ORE", "DEEPSLATE_EMERALD_ORE", "DIAMOND_ORE", "DEEPSLATE_DIAMOND_ORE", "NETHER_GOLD_ORE", "ANCIENT_DEBRIS"};
 
-    String[] WaterMob = {"AXOLOTL", "COD", "DOLPHIN", "GLOW_SQUID", "GUARDIAN", "ELDER_GUARDIAN", "PUFFERFISH", "SALMON", "SQUID", "TROPICAL_FISH",
-            "TURTLE"
-    };
+    String[] WaterMob = {"AXOLOTL", "COD", "DOLPHIN", "GLOW_SQUID", "GUARDIAN", "ELDER_GUARDIAN", "PUFFERFISH", "SALMON", "SQUID", "TROPICAL_FISH", "TURTLE"};
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        ItemStack cursor = event.getCursor();
-        ItemStack target = event.getCurrentItem();
-        if (target == null) return;
-        if (cursor.getType() != Material.PLAYER_HEAD) return;
-        if (target.getType() != Material.FISHING_ROD) return;
-        ItemMeta meta = cursor.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) return;
-        if (PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(meta.displayName()))
-                .replaceAll("§[0-9A-FK-ORa-fk-or]", "").equalsIgnoreCase("Angler")) {
-            event.setCancelled(true);
-            target.addUnsafeEnchantment(Enchantment.LUCK_OF_THE_SEA, 3);
-            event.setCurrentItem(target);
-            if (cursor.getAmount() > 1) {
-                cursor.setAmount(cursor.getAmount() - 1);
-                player.setItemOnCursor(cursor);
-            } else {
-                player.setItemOnCursor(new ItemStack(Material.AIR));
+        if ((event.getWhoClicked() instanceof Player player)) {
+            ItemStack cursor = event.getCursor();
+            ItemStack target = event.getCurrentItem();
+            if (target != null) {
+                if (target.getType() == Material.FISHING_ROD) {
+                    if (isMatchingItem(cursor)) {
+                        ItemMeta meta = cursor.getItemMeta();
+                        event.setCancelled(true);
+                        if (compareMetaName(meta, "Angler")) {
+                            target.addUnsafeEnchantment(Enchantment.LUCK_OF_THE_SEA, 3);
+                            event.setCurrentItem(target);
+                            if (cursor.getAmount() > 1) {
+                                cursor.setAmount(cursor.getAmount() - 1);
+                                player.setItemOnCursor(cursor);
+                            } else {
+                                player.setItemOnCursor(new ItemStack(Material.AIR));
+                            }
+                            player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
+                        }
+                    }
+                }
             }
-            player.sendMessage("§bCanna potenziata con Fortuna del Mare III!");
-            player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
         }
+    }
+
+    public Boolean compareMetaName(ItemMeta meta, String rune) {
+        if (meta.hasDisplayName()) {
+            String extract = PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(meta.displayName()))
+                    .replaceAll("§[0-9A-FK-ORa-fk-or]", "");
+            return extract.equalsIgnoreCase(rune);
+        }
+        return false;
+    }
+
+    public boolean isMatchingItem(ItemStack item) {
+        List<ItemStack> validItems = List.of(
+                angler(), baitMaster(), longCast(), saltOfTheSea()
+        );
+        for (ItemStack compare : validItems) {
+            if (item.isSimilar(compare)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @EventHandler
     public void onFish(PlayerFishEvent event) {
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
+            Player fisher = event.getPlayer();
+            Location hookLocation = event.getHook().getLocation();
+            ItemStack[] possibleItems = {angler(), baitMaster(), littleFish(), longCast(), saltOfTheSea(), oceansSting()};
+            double launchSpeed = 0.7;
             if (event.getCaught() instanceof Item caughtItem) {
-                ItemStack[] items = {angler(), baitMaster(), littleFish(), longCast(), saltOfTheSea()};
-                for (ItemStack item : items) {
-                    if (item.getType() != Material.AIR) {
-                        caughtItem.setItemStack(item);
-                        break;
-                    }
+                Vector velocity = fisher.getLocation().subtract(hookLocation).toVector().normalize().multiply(launchSpeed);
+                caughtItem.setVelocity(velocity);
+            }
+            for (ItemStack item : possibleItems) {
+                if (item.getType() != Material.AIR) {
+                    Item droppedItem = hookLocation.getWorld().dropItemNaturally(hookLocation, item);
+                    Vector velocity = fisher.getLocation().subtract(hookLocation).toVector().normalize().multiply(launchSpeed);
+                    droppedItem.setVelocity(velocity);
                 }
             }
+            if(event.getPlayer().getInventory().getItemInMainHand().getType() == Material.FISHING_ROD){
+                //
+                int exp = event.getExpToDrop();
+                event.setExpToDrop(expIncrease(4, 1 ,exp));
+            }
         }
+    }
+
+    public static int expIncrease(double percentuale, int livello, int numero) {
+        // Calcola la probabilità finale moltiplicando la percentuale per il livello
+        double probabilita = percentuale * livello;
+
+        // Aggiungi la probabilità calcolata al numero
+        double incremento = numero * (probabilita / 100);  // La probabilità è espressa in percentuale
+        int numeroFinale = (int) (numero + incremento);
+
+        return numeroFinale;
     }
 
     @EventHandler
@@ -188,15 +231,6 @@ public class Events implements Listener {
                 }
             }
         }
-        for (String s : materialNether) {
-            if (block.getType().toString().equalsIgnoreCase(s)) {
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), expertExtraction());
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), blessingOfWisdom());
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), artifactHunter());
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), resonatingHit());
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), smoothTalker());
-            }
-        }
     }
 
     private boolean isPlantTable(Material material) {
@@ -261,6 +295,16 @@ public class Events implements Listener {
                     }
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerExpGain(PlayerExpChangeEvent event) {
+        Player player = event.getPlayer();
+        int amount = event.getAmount();
+
+        if (amount > 0) {
+            player.sendMessage("§aHai guadagnato §e" + amount + "§a punti esperienza!");
         }
     }
 
