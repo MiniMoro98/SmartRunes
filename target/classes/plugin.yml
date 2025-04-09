@@ -1,0 +1,9 @@
+name: SmartRunes
+version: 1.0.0
+main: it.moro.smartRunes.SmartRunes
+api-version: '1.20'
+
+commands:
+  runes:
+    description: generic command.
+    usage: /runes

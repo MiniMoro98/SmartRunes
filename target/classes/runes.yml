@@ -1,0 +1,93 @@
+Runes:
+  Angler: #0.2 %
+    text: "&b&lAngler"
+    chance-drop: 0.2
+  AntiGravThrow: #0.4 %
+    text: "Anti-Grav Throw"
+    chance-drop: 0.4
+  ArtifactHunter: #0.5 %
+    text: "Artifact Hunter"
+    chance-drop: 0.5
+  BaitMaster: #0.4 %
+    text: "Bait Master"
+    chance-drop: 0.4
+  BlessingOfWisdom: #0.05 %
+    text: "Blessing Of Wisdom"
+    chance-drop: 0.05
+  DivineHandiwork: #0.01 %
+    text: "Divine Handiwork"
+    chance-drop: 0.01
+  EnderShot: #0.2 %
+    text: "Ender Shot"
+    chance-drop: 0.2
+  ExpertExtraction: #0.04 %
+    text: "Expert Extraction"
+    chance-drop: 0.04
+  ExpertMining: #0.04 %
+    text: "Expert Mining"
+    chance-drop: 0.04
+  FarmlandManagement: #0.05 %
+    text: "Farmland Management"
+    chance-drop: 0.05
+  GreenThumb: #0.08 %
+    text: "Green Thumb"
+    chance-drop: 0.08
+  LittleFish: # 0.04 & 0.08 %
+    text: "Little Fish"
+    chance-drop-fishing: 0.4
+    chance-drop-kill-watermob: 0.08
+  LongCast: #0.04 %
+    text: "Long Cast"
+    chance-drop: 0.4
+  MasterHarvester: #0.02 %
+    text: "Master Harvester"
+    chance-drop: 0.02
+  MinersEyes: #0.02 & 0.1 & 0.2%
+    text: "Miner's Eyes"
+    chance-drop-block: 0.02
+    chance-drop-mobs: 0.1
+    chance-drop-drowned: 0.2
+  MobHunter: #0.02 %
+    text: "Mob Hunter"
+    chance-drop: 0.02
+  OceansSting: #0.1 %
+    text: "Ocean's Sting"
+    chance-drop: 0.1
+  PackAlpha: #0.2 %
+    text: "Pack Alpha"
+    chance-drop: 0.2
+  PhantomArrow: #0.05 & 0.8 %
+    text: "Phantom Arrow"
+    chance-drop-skeletons: 0.05
+    chance-drop-pillagers: 0.8
+  PhantomStrike: #0.2 & 0.8 %
+    text: "Phantom Strike"
+    chance-drop-skeletons: 0.2
+    chance-drop-pillagers: 0.8
+  Precision: #0.2 & 0.8 %
+    text: "Precision"
+    chance-drop-skeletons: 0.2
+    chance-drop-pillagers: 0.8
+  Reinforcement: #0.06 & 0.02 %
+    text: "Reinforcement"
+    chance-drop-golem: 0.06
+    chance-drop-mob: 0.02
+    chance-drop-tree: 0.02
+    chance-drop-ores: 0.02
+  ResonatingHit: #0.1 & 0.4 %
+    text: "Resonating Hit"
+    chance-drop-ores: 0.1
+    chance-drop-blaze: 0.4
+  SaltOfTheSea: #0.4 %
+    text: "Salt Of The Sea"
+    chance-drop: 0.4
+  SmoothTalker: #0.08 %
+    text: "Smooth Talker"
+    chance-drop: 0.08
+  TreeAntiHugger: #0.05 & 0.8 %
+    text: "Tree Anti-Hugger"
+    chance-drop-tree: 0.05
+    chance-drop-pillagers: 0.8
+  WildMagicStrike: #0.05 %
+    text: "Wild Magic Strike"
+    chance-drop: 0.05
