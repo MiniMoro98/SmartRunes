@@ -1,95 +1,277 @@
 Runes:
-  Angler: #0.2 %
+  Angler:
     text: "&b&lAngler"
-    chance-drop: 0.2
-    effects: # % for level
-      exp-increase: 4
-  AntiGravThrow: #0.4 %
+    chance-drop: 0.2 #0.2 %
+    effects:
+      increase: 4
+      max-level: 5
+    applied-to:
+      - "FISHING_ROD"
+
+  AntiGravThrow:
     text: "Anti-Grav Throw"
-    chance-drop: 0.4
-  ArtifactHunter: #0.5 %
+    chance-drop: 0.4 #0.4 %
+    effects:
+      increase: 7
+      max-level: 3
+    applied-to:
+      - "_SWORD"
+
+  ArtifactHunter:
     text: "Artifact Hunter"
-    chance-drop: 0.5
-  BaitMaster: #0.4 %
+    chance-drop: 0. #0.5 %
+    effects:
+      increase: 1
+      max-level: 5
+    applied-to:
+      - "_PICKAXE"
+      - "_SWORD"
+
+  BaitMaster:
     text: "Bait Master"
-    chance-drop: 0.4
-  BlessingOfWisdom: #0.05 %
+    chance-drop: 0.4 #0.4 %
+    effects:
+      increase: 2.5
+      max-level: 5
+    applied-to:
+      - "FISHING_ROD"
+
+  BlessingOfWisdom:
     text: "Blessing Of Wisdom"
-    chance-drop: 0.05
-  DivineHandiwork: #0.01 %
+    chance-drop: 0.05 #0.05 %
+    effects:
+      increase: 2
+      max-level: 5
+    applied-to:
+      - "_PICKAXE"
+      - "_SWORD"
+      - "_AXE"
+      - "_SHOVEL"
+      - "_HOE"
+
+  DivineHandiwork:
     text: "Divine Handiwork"
-    chance-drop: 0.01
-  EnderShot: #0.2 %
+    chance-drop: 0.01 #0.01 %
+    effects:
+      increase: 1
+      max-level: 1
+    applied-to:
+      - "_PICKAXE"
+      - "_SWORD"
+      - "_AXE"
+      - "_SHOVEL"
+      - "_HOE"
+      - "_CHESTPLATE"
+      - "_BOOTS"
+      - "_HELMET"
+      - "_LEGGINGS"
+
+  EnderShot:
     text: "Ender Shot"
-    chance-drop: 0.2
-  ExpertExtraction: #0.04 %
+    chance-drop: 0.2 #0.2 %
+    effects:
+      increase: 1
+      max-level: 1
+    applied-to:
+      - "BOW"
+      - "CROSSBOW"
+
+  ExpertExtraction:
     text: "Expert Extraction"
-    chance-drop: 0.04
-  ExpertMining: #0.04 %
+    chance-drop: 0.04 #0.04 %
+    effects:
+      increase: 1
+      max-level: 1
+    applied-to:
+      - "_PICKAXE"
+
+  ExpertMining:
     text: "Expert Mining"
-    chance-drop: 0.04
-  FarmlandManagement: #0.05 %
+    chance-drop: 0.04 #0.04 %
+    effects:
+      increase: 1
+      max-level: 4
+    applied-to:
+      - "_PICKAXE"
+      - "_SHOVEL"
+
+  FarmlandManagement:
     text: "Farmland Management"
-    chance-drop: 0.05
-  GreenThumb: #0.08 %
+    chance-drop: 0.05 #0.05 %
+    effects:
+      increase: 2
+      max-level: 5
+    applied-to:
+      - "_HOE"
+
+  GreenThumb:
     text: "Green Thumb"
-    chance-drop: 0.08
-  LittleFish: # 0.04 & 0.08 %
+    chance-drop: 0.08 #0.08 %
+    effects:
+      increase: 15
+      max-level: 5
+    applied-to:
+      - "_HOE"
+
+  LittleFish:
     text: "Little Fish"
-    chance-drop-fishing: 0.4
-    chance-drop-kill-watermob: 0.08
-  LongCast: #0.04 %
+    chance-drop-fishing: 0.4 #0.4
+    chance-drop-kill-water-mob: 0.08 #0.08 %
+    effects:
+      increase: 1
+      max-level: 1
+    applied-to:
+      - "_HELMET"
+
+  LongCast:
     text: "Long Cast"
-    chance-drop: 0.4
+    chance-drop: 0.4 #0.04 %
+    effects:
+      increase: 1
+      max-level: 1
+      velocity: 0.8
+    applied-to:
+      - "FISHING_ROD"
+
   MasterHarvester: #0.02 %
     text: "Master Harvester"
     chance-drop: 0.02
-  MinersEyes: #0.02 & 0.1 & 0.2%
+    effects:
+      increase: 15
+      max-level: 5
+    applied-to:
+      - "_HOE"
+
+  MinersEyes:
     text: "Miner's Eyes"
-    chance-drop-block: 0.02
-    chance-drop-mobs: 0.1
-    chance-drop-drowned: 0.2
-  MobHunter: #0.02 %
+    chance-drop-block: 0.02 #0.02 %
+    chance-drop-mobs: 0.1 # 0.1 %
+    chance-drop-drowned: 0.2 #0.2 %
+    effects:
+      increase: 1
+      max-level: 1
+    applied-to:
+      - "_HELMET"
+
+  MobHunter:
     text: "Mob Hunter"
-    chance-drop: 0.02
-  OceansSting: #0.1 %
+    chance-drop: 0.02 #0.02 %
+    effects:
+      increase: 1
+      max-level: 1
+    applied-to:
+      - "_SWORD"
+
+  OceansSting:
     text: "Ocean's Sting"
-    chance-drop: 0.1
-  PackAlpha: #0.2 %
+    chance-drop: 0.1 #0.1 %
+    effects:
+      increase: 2
+      max-level: 5
+    applied-to:
+      - "_SWORD"
+
+  PackAlpha:
     text: "Pack Alpha"
-    chance-drop: 0.2
-  PhantomArrow: #0.05 & 0.8 %
+    chance-drop: 0.2 #0.2 %
+    effects:
+      increase: 1
+      max-level: 3
+    applied-to:
+      - "_SWORD"
+
+  PhantomArrow:
     text: "Phantom Arrow"
-    chance-drop-skeletons: 0.05
-    chance-drop-pillagers: 0.8
-  PhantomStrike: #0.2 & 0.8 %
+    chance-drop-skeletons: 0.05 #0.05 %
+    chance-drop-pillagers: 0.8 #0.8 %
+    effects:
+      increase: 5
+      max-level: 5
+    applied-to:
+      - "BOW"
+      - "CROSSBOW"
+
+  PhantomStrike:
     text: "Phantom Strike"
-    chance-drop-skeletons: 0.2
-    chance-drop-pillagers: 0.8
-  Precision: #0.2 & 0.8 %
+    chance-drop-skeletons: 0.2 #0.2 %
+    chance-drop-pillagers: 0.8 #0.8 %
+    effects:
+      increase: 4
+      max-level: 5
+    applied-to:
+      - "_SWORD"
+      - "_AXE"
+      - "MACE"
+
+  Precision:
     text: "Precision"
-    chance-drop-skeletons: 0.2
-    chance-drop-pillagers: 0.8
-  Reinforcement: #0.06 & 0.02 %
+    chance-drop-skeletons: 0.2 #0.2 %
+    chance-drop-pillagers: 0.8 #0.8 %
+    effects:
+      increase: 30
+      max-level: 5
+    applied-to:
+      - "BOW"
+      - "CROSSBOW"
+
+  Reinforcement:
     text: "Reinforcement"
-    chance-drop-golem: 0.06
-    chance-drop-mob: 0.02
-    chance-drop-tree: 0.02
-    chance-drop-ores: 0.02
-  ResonatingHit: #0.1 & 0.4 %
+    chance-drop-golem: 0.06 #0.06 %
+    chance-drop-mob: 0.02 #0.02 %
+    chance-drop-tree: 0.02 #0.02 %
+    chance-drop-ores: 0.02 #0.02 %
+    effects:
+      increase: 2.5
+      max-level: 1
+    applied-to:
+      - "_CHESTPLATE"
+      - "_BOOTS"
+      - "_HELMET"
+      - "_LEGGINGS"
+
+  ResonatingHit:
     text: "Resonating Hit"
-    chance-drop-ores: 0.1
-    chance-drop-blaze: 0.4
-  SaltOfTheSea: #0.4 %
+    chance-drop-ores: 0.1 #0.1 %
+    chance-drop-blaze: 0.4 #0.4 %
+    effects:
+      increase: 20
+      max-level: 5
+    applied-to:
+      - "_PICKAXE"
+
+  SaltOfTheSea:
     text: "Salt Of The Sea"
-    chance-drop: 0.4
-  SmoothTalker: #0.08 %
+    chance-drop: 0.4 #0.4 %
+    effects:
+      increase: 20
+      max-level: 5
+    applied-to:
+      - "FISHING_ROD"
+
+  SmoothTalker:
     text: "Smooth Talker"
-    chance-drop: 0.08
-  TreeAntiHugger: #0.05 & 0.8 %
+    chance-drop: 0.08 #0.08 %
+    effects:
+      increase: 2
+      max-level: 5
+    applied-to:
+      - "GOLDEN_CHESTPLATE"
+
+  TreeAntiHugger:
     text: "Tree Anti-Hugger"
-    chance-drop-tree: 0.05
-    chance-drop-pillagers: 0.8
-  WildMagicStrike: #0.05 %
+    chance-drop-tree: 0.05 #0.05 %
+    chance-drop-pillagers: 0.8 #0.8 %
+    effects:
+      increase: 1
+      max-level: 2
+    applied-to:
+      - "_AXE"
+
+  WildMagicStrike:
     text: "Wild Magic Strike"
-    chance-drop: 0.05
+    chance-drop: 0.05 #0.05 %
+    effects:
+      increase: 1.25
+      max-level: 5
+    applied-to:
+      - "_SWORD"

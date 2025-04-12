@@ -1,0 +1,5 @@
+DEBUG: true
+
+message:
+  msg1: "&a[SmartRunes] You have already reached the maximum level for this rune!"
+  msg2: "&a[SmartRunes] The item already has a higher level for this rune!"

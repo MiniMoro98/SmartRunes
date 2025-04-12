@@ -1,24 +1,26 @@
 package it.moro.smartRunes;
 
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -44,59 +46,140 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if ((event.getWhoClicked() instanceof Player player)) {
-            ItemStack cursor = event.getCursor();
-            ItemStack target = event.getCurrentItem();
-            if (target != null) {
-                if (target.getType() == Material.FISHING_ROD) {
-                    if (isMatchingItem(cursor)) {
-                        ItemMeta meta = cursor.getItemMeta();
-                        event.setCancelled(true);
-                        if (compareMetaName(meta, "Angler")) {
-                            target.addUnsafeEnchantment(Enchantment.LUCK_OF_THE_SEA, 3);
-                            event.setCurrentItem(target);
-                            if (cursor.getAmount() > 1) {
-                                cursor.setAmount(cursor.getAmount() - 1);
-                                player.setItemOnCursor(cursor);
-                            } else {
-                                player.setItemOnCursor(new ItemStack(Material.AIR));
-                            }
-                            player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
-                        }
+        if (event.getClick() == ClickType.RIGHT) return;
+        if (event.getAction() == InventoryAction.DROP_ALL_SLOT) return;
+        if (event.getAction() == InventoryAction.DROP_ONE_SLOT) return;
+        if (event.getClickedInventory() == null) return;
+        if (event.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        ItemStack cursor = event.getCursor();
+        ItemStack target = event.getCurrentItem();
+        if (cursor == target) return;
+        if (target == null) return;
+        if (target.getType() == Material.AIR) return;
+        if (cursor.getType() != Material.PLAYER_HEAD) return;
+        ItemMeta meta = cursor.getItemMeta();
+        if (meta == null) return;
+        if (cursor.getItemMeta().getPersistentDataContainer().isEmpty()) return;
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        String[][] array = new String[27][2];
+        int[] runeLvl = new int[27];
+        int index = 0;
+        for (int f = 0; f < runesParameters.length; f++) {
+            String id = runesParameters[f][3].toLowerCase();
+            NamespacedKey key = new NamespacedKey("smartrunes", id);
+            if (data.has(key, PersistentDataType.INTEGER)) {
+                Integer value = data.get(key, PersistentDataType.INTEGER);
+                if (value != null) {
+                    if (value > 0) {
+                        array[f][0] = id;
+                        runeLvl[f] = value;
+                        array[f][1] = runesParameters[f][3];
+                        index = f;
                     }
                 }
             }
         }
-    }
-
-    public Boolean compareMetaName(ItemMeta meta, String rune) {
-        if (meta.hasDisplayName()) {
-            String extract = PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(meta.displayName()))
-                    .replaceAll("§[0-9A-FK-ORa-fk-or]", "");
-            return extract.equalsIgnoreCase(rune);
-        }
-        return false;
-    }
-
-    public boolean isMatchingItem(ItemStack item) {
-        List<ItemStack> validItems = List.of(
-                angler(), baitMaster(), longCast(), saltOfTheSea()
-        );
-        for (ItemStack compare : validItems) {
-            if (item.isSimilar(compare)) {
-                return true;
+        List<String> lista;
+        lista = getList("Runes." + array[index][1] + ".applied-to");
+        boolean applicabile = false;
+        String item = target.getType().toString();
+        for (String s : lista) {
+            if (item.contains(s)) {
+                applicabile = true;
+                break;
             }
         }
-        return false;
+        if (!applicabile) return;
+        ItemMeta metaTarget = target.getItemMeta();
+        if (metaTarget == null) return;
+        PersistentDataContainer dataTarget = metaTarget.getPersistentDataContainer();
+        if (dataTarget.isEmpty()) {
+            for (String[] runes : runesParameters) {
+                NamespacedKey key1 = new NamespacedKey("smartrunes", runes[3].toLowerCase());
+                data.set(key1, PersistentDataType.INTEGER, 0);
+            }
+            List<Component> lore = new ArrayList<>();
+            NamespacedKey key = new NamespacedKey("smartrunes", array[index][0]);
+            dataTarget.set(key, PersistentDataType.INTEGER, runeLvl[index]);
+            int indice = -1;
+            for (int a = 0; a < runesParameters.length; a++) {
+                if (array[index][0].equalsIgnoreCase(runesParameters[a][3].toLowerCase())) {
+                    indice = a;
+                }
+            }
+            if (indice != -1) {
+                lore.add(Component.text("§7" + runesParameters[indice][2] + " " + romeLevel[runeLvl[index] - 1]));
+            }
+            metaTarget.lore(lore);
+        } else {
+            int[] livelli = new int[27];
+            for (int s = 0; s < runesParameters.length; s++) {
+                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[s][3].toLowerCase());
+                if (dataTarget.has(key, PersistentDataType.INTEGER)) {
+                    Integer value1 = dataTarget.get(key, PersistentDataType.INTEGER);
+                    if (value1 != null) {
+                        livelli[s] = value1;
+                    }
+                }
+            }
+            boolean ritorno = false;
+            for (int s = 0; s < runesParameters.length; s++) {
+                Double maxLevel = getDouble("Runes." + runesParameters[s][3] + ".effects.max-level");
+                int attuale = livelli[s];
+                int nuovo = runeLvl[s];
+                if (nuovo > 0) {
+                    if (attuale == 0) {
+                        livelli[s] = nuovo;
+                    } else if (nuovo > attuale) {
+                        livelli[s] = nuovo;
+                    } else if (nuovo == attuale) {
+                        if (attuale + 1 <= maxLevel) {
+                            livelli[s] = attuale + 1;
+                        } else {
+                            player.sendMessage(Objects.requireNonNull(getStringConfig("message.msg1")));
+                            ritorno = true;
+                        }
+                    } else {
+                        player.sendMessage(Objects.requireNonNull(getStringConfig("message.msg2")));
+                        ritorno = true;
+                    }
+                }
+            }
+            if (ritorno) return;
+            for (int v = 0; v < runesParameters.length; v++) {
+                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[v][3].toLowerCase());
+                dataTarget.set(key, PersistentDataType.INTEGER, livelli[v]);
+            }
+            List<Component> lore = new ArrayList<>();
+            for (int q = 0; q < runesParameters.length; q++) {
+                if (livelli[q] > 0) {
+                    lore.add(Component.text("§7" + runesParameters[q][2] + " " + romeLevel[livelli[q] - 1]));
+                }
+            }
+            metaTarget.lore(lore);
+        }
+        target.setItemMeta(metaTarget);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            event.setCurrentItem(target);
+            if (cursor.getAmount() > 1) {
+                cursor.setAmount(cursor.getAmount() - 1);
+                player.setItemOnCursor(cursor);
+            } else {
+                player.setItemOnCursor(new ItemStack(Material.AIR));
+            }
+            player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
+        }, 1L);
     }
+
 
     @EventHandler
     public void onFish(PlayerFishEvent event) {
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
             Player fisher = event.getPlayer();
+            double launchSpeed = getDouble("Runes.LongCast.effects.velocity");
             Location hookLocation = event.getHook().getLocation();
             ItemStack[] possibleItems = {angler(), baitMaster(), littleFish(), longCast(), saltOfTheSea(), oceansSting()};
-            double launchSpeed = 0.7;
             if (event.getCaught() instanceof Item caughtItem) {
                 Vector velocity = fisher.getLocation().subtract(hookLocation).toVector().normalize().multiply(launchSpeed);
                 caughtItem.setVelocity(velocity);
@@ -108,23 +191,79 @@ public class Events implements Listener {
                     droppedItem.setVelocity(velocity);
                 }
             }
-            if(event.getPlayer().getInventory().getItemInMainHand().getType() == Material.FISHING_ROD){
-                //
-                int exp = event.getExpToDrop();
-                event.setExpToDrop(expIncrease(4, 1 ,exp));
+            if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
+                ItemStack utensile = event.getPlayer().getInventory().getItemInMainHand();
+                ItemMeta metaUtensile = utensile.getItemMeta();
+                if (metaUtensile == null) return;
+                PersistentDataContainer dataUtensile = metaUtensile.getPersistentDataContainer();
+                Item caught = (Item) event.getCaught();
+                if (caught == null) return;
+                ItemStack pescato = caught.getItemStack();
+                int amountOriginale = pescato.getAmount();
+                for (String[] runesParameter : runesParameters) {
+                    NamespacedKey key = new NamespacedKey("smartrunes", runesParameter[3].toLowerCase());
+                    int value = dataUtensile.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                    if (value <= 0) continue;
+                    switch (runesParameter[3]) {
+                        case "BaitMaster" -> {
+                            double newAmount = increase(getDouble("Runes.BaitMaster.effects.increase"), value, pescato.getAmount());
+                            pescato.setAmount((int) newAmount);
+                            if (getBoolConfig("DEBUG")) {
+                                event.getPlayer().sendMessage("§a[SmartRunes] You received " + amountOriginale + "x " + pescato.getType() + " + " + ((int) newAmount - amountOriginale));
+                            }
+                        }
+                        case "SaltOfTheSea" -> {
+                            double probability = getDouble("Runes.SaltOfTheSea.effects.increase") * value;
+                            if (checkSuccess(probability)) {
+                                if (pescato.getType() == Material.SALMON) {
+                                    pescato.setType(Material.COOKED_SALMON);
+                                    if (getBoolConfig("DEBUG")) {
+                                        event.getPlayer().sendMessage("§a[SmartRunes] The fish SALMON was cooked");
+                                    }
+                                } else if (pescato.getType() == Material.COD) {
+                                    pescato.setType(Material.COOKED_COD);
+                                    if (getBoolConfig("DEBUG")) {
+                                        event.getPlayer().sendMessage("§a[SmartRunes] The fish COD was cooked");
+                                    }
+                                }
+                            }
+                        }
+                        case "Angler" -> {
+                            int exp = event.getExpToDrop();
+                            double extraExp = increase(getDouble("Runes.Angler.effects.increase"), value, exp);
+                            event.setExpToDrop((int) extraExp);
+                            if (getBoolConfig("DEBUG")) {
+                                event.getPlayer().sendMessage("§a[SmartRunes] Gained " + exp + " + " + String.format("%.1f", (extraExp - exp)) + " XP");
+                            }
+                        }
+                    }
+                }
+                caught.setItemStack(pescato);
+            }
+        } else if (event.getState() == PlayerFishEvent.State.FISHING) {
+            ItemStack utensile = event.getPlayer().getInventory().getItemInMainHand();
+            ItemMeta meta = utensile.getItemMeta();
+            PersistentDataContainer data = meta.getPersistentDataContainer();
+            NamespacedKey key = new NamespacedKey("smartrunes", "longcast");
+            int value = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+            if (value > 0) {
+                FishHook hook = event.getHook();
+                Vector currentVelocity = hook.getVelocity();
+                double vel = hook.getVelocity().length();
+                double newVel = increase(getDouble("Runes.BaitMaster.effects.increase"), value, vel);
+                hook.setVelocity(currentVelocity.multiply(newVel));
+                if (getBoolConfig("DEBUG")) {
+                    event.getPlayer().sendMessage("§a[SmartRunes] Default launch distance " + String.format("%.1f", vel) + " + " + String.format("%.1f", newVel));
+                }
             }
         }
     }
 
-    public static int expIncrease(double percentuale, int livello, int numero) {
-        // Calcola la probabilità finale moltiplicando la percentuale per il livello
-        double probabilita = percentuale * livello;
 
-        // Aggiungi la probabilità calcolata al numero
-        double incremento = numero * (probabilita / 100);  // La probabilità è espressa in percentuale
-        int numeroFinale = (int) (numero + incremento);
-
-        return numeroFinale;
+    public static Double increase(double percentuale, double livello, double numero) {
+        double probability = percentuale * livello;
+        double incremento = numero * (probability / 100);
+        return numero + incremento;
     }
 
     @EventHandler
@@ -295,16 +434,6 @@ public class Events implements Listener {
                     }
                 }
             }
-        }
-    }
-
-    @EventHandler
-    public void onPlayerExpGain(PlayerExpChangeEvent event) {
-        Player player = event.getPlayer();
-        int amount = event.getAmount();
-
-        if (amount > 0) {
-            player.sendMessage("§aHai guadagnato §e" + amount + "§a punti esperienza!");
         }
     }
 
