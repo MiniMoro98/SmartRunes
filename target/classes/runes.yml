@@ -1,149 +1,162 @@
 Runes:
   Angler:
     text: "&b&lAngler"
+    material: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
       increase: 4
       max-level: 5
     applied-to:
-      - "FISHING_ROD"
+      - FISHING_ROD
 
   AntiGravThrow:
     text: "Anti-Grav Throw"
+    material: BOLT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.4 %
     effects:
       increase: 7
       max-level: 3
     applied-to:
-      - "_SWORD"
+      - _SWORD
 
   ArtifactHunter:
     text: "Artifact Hunter"
-    chance-drop: 0. #0.5 %
+    material: WILD_ARMOR_TRIM_SMITHING_TEMPLATE
+    chance-drop: 0.5 #0.5 %
     effects:
-      increase: 1
-      max-level: 5
+      probability: 3
+      max-level: 1
     applied-to:
-      - "_PICKAXE"
-      - "_SWORD"
+      - _HELMET
+      - _BOOTS
+      - _CHESTPLATE
+      - _LEGGINGS
 
   BaitMaster:
     text: "Bait Master"
+    material: SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.4 %
     effects:
       increase: 2.5
       max-level: 5
     applied-to:
-      - "FISHING_ROD"
+      - FISHING_ROD
 
   BlessingOfWisdom:
     text: "Blessing Of Wisdom"
+    material: VEX_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %
     effects:
       increase: 2
       max-level: 5
     applied-to:
-      - "_PICKAXE"
-      - "_SWORD"
-      - "_AXE"
-      - "_SHOVEL"
-      - "_HOE"
+      - _PICKAXE
+      - _SWORD
+      - _AXE
+      - _SHOVEL
+      - _HOE
 
   DivineHandiwork:
     text: "Divine Handiwork"
+    material: COAST_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.01 #0.01 %
     effects:
       increase: 1
       max-level: 1
     applied-to:
-      - "_PICKAXE"
-      - "_SWORD"
-      - "_AXE"
-      - "_SHOVEL"
-      - "_HOE"
-      - "_CHESTPLATE"
-      - "_BOOTS"
-      - "_HELMET"
-      - "_LEGGINGS"
+      - _PICKAXE
+      - _SWORD
+      - _AXE
+      - _SHOVEL
+      - _HOE
+      - _CHESTPLATE
+      - _BOOTS
+      - _HELMET
+      - _LEGGINGS
+      - FISHING_ROD
 
   EnderShot:
     text: "Ender Shot"
+    material: SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
       increase: 1
       max-level: 1
     applied-to:
-      - "BOW"
-      - "CROSSBOW"
+      - BOW
+      - CROSSBOW
 
   ExpertExtraction:
     text: "Expert Extraction"
+    material: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.04 #0.04 %
     effects:
-      increase: 1
-      max-level: 1
+      max-blocks: 10
     applied-to:
-      - "_PICKAXE"
+      - _PICKAXE
 
   ExpertMining:
     text: "Expert Mining"
+    material: RIB_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.04 #0.04 %
     effects:
-      increase: 1
-      max-level: 4
+      max-level: 2
     applied-to:
-      - "_PICKAXE"
-      - "_SHOVEL"
+      - _PICKAXE
+      - _SHOVEL
 
   FarmlandManagement:
     text: "Farmland Management"
+    material: WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %
     effects:
-      increase: 2
       max-level: 5
     applied-to:
-      - "_HOE"
+      - _HOE
 
   GreenThumb:
     text: "Green Thumb"
+    material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.08 #0.08 %
     effects:
-      increase: 15
       max-level: 5
     applied-to:
-      - "_HOE"
+      - _HOE
 
   LittleFish:
     text: "Little Fish"
+    material: SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-fishing: 0.4 #0.4
     chance-drop-kill-water-mob: 0.08 #0.08 %
     effects:
-      increase: 1
       max-level: 1
     applied-to:
-      - "_HELMET"
+      - _HELMET
 
   LongCast:
     text: "Long Cast"
+    material: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.04 %
     effects:
       increase: 1
       max-level: 1
       velocity: 0.8
     applied-to:
-      - "FISHING_ROD"
+      - FISHING_ROD
 
   MasterHarvester: #0.02 %
     text: "Master Harvester"
+    material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.02
     effects:
       increase: 15
       max-level: 5
     applied-to:
-      - "_HOE"
+      - _HOE
 
   MinersEyes:
     text: "Miner's Eyes"
+    material: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-block: 0.02 #0.02 %
     chance-drop-mobs: 0.1 # 0.1 %
     chance-drop-drowned: 0.2 #0.2 %
@@ -151,71 +164,78 @@ Runes:
       increase: 1
       max-level: 1
     applied-to:
-      - "_HELMET"
+      - _HELMET
 
   MobHunter:
     text: "Mob Hunter"
+    material: WARD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.02 #0.02 %
     effects:
-      increase: 1
+      chance-drop-egg: 1
       max-level: 1
     applied-to:
-      - "_SWORD"
+      - _SWORD
 
   OceansSting:
     text: "Ocean's Sting"
+    material: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.1 #0.1 %
     effects:
       increase: 2
       max-level: 5
     applied-to:
-      - "_SWORD"
+      - _SWORD
 
   PackAlpha:
     text: "Pack Alpha"
+    material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
       increase: 1
       max-level: 3
     applied-to:
-      - "_SWORD"
+      - _SWORD
 
   PhantomArrow:
     text: "Phantom Arrow"
+    material: WARD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-skeletons: 0.05 #0.05 %
     chance-drop-pillagers: 0.8 #0.8 %
     effects:
       increase: 5
       max-level: 5
     applied-to:
-      - "BOW"
-      - "CROSSBOW"
+      - BOW
+      - CROSSBOW
 
   PhantomStrike:
     text: "Phantom Strike"
+    material: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-skeletons: 0.2 #0.2 %
     chance-drop-pillagers: 0.8 #0.8 %
     effects:
       increase: 4
       max-level: 5
     applied-to:
-      - "_SWORD"
-      - "_AXE"
-      - "MACE"
+      - _SWORD
+      - _AXE
+      - MACE
 
   Precision:
     text: "Precision"
+    material: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-skeletons: 0.2 #0.2 %
     chance-drop-pillagers: 0.8 #0.8 %
     effects:
       increase: 30
       max-level: 5
     applied-to:
-      - "BOW"
-      - "CROSSBOW"
+      - BOW
+      - CROSSBOW
 
   Reinforcement:
     text: "Reinforcement"
+    material: DUNE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-golem: 0.06 #0.06 %
     chance-drop-mob: 0.02 #0.02 %
     chance-drop-tree: 0.02 #0.02 %
@@ -224,54 +244,59 @@ Runes:
       increase: 2.5
       max-level: 1
     applied-to:
-      - "_CHESTPLATE"
-      - "_BOOTS"
-      - "_HELMET"
-      - "_LEGGINGS"
+      - _CHESTPLATE
+      - _BOOTS
+      - _HELMET
+      - _LEGGINGS
 
   ResonatingHit:
     text: "Resonating Hit"
+    material: SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-ores: 0.1 #0.1 %
     chance-drop-blaze: 0.4 #0.4 %
     effects:
       increase: 20
       max-level: 5
     applied-to:
-      - "_PICKAXE"
+      - _PICKAXE
 
   SaltOfTheSea:
     text: "Salt Of The Sea"
+    material: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.4 %
     effects:
       increase: 20
       max-level: 5
     applied-to:
-      - "FISHING_ROD"
+      - FISHING_ROD
 
   SmoothTalker:
     text: "Smooth Talker"
+    material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.08 #0.08 %
     effects:
       increase: 2
       max-level: 5
     applied-to:
-      - "GOLDEN_CHESTPLATE"
+      - GOLDEN_CHESTPLATE
 
   TreeAntiHugger:
     text: "Tree Anti-Hugger"
+    material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-tree: 0.05 #0.05 %
     chance-drop-pillagers: 0.8 #0.8 %
     effects:
       increase: 1
       max-level: 2
     applied-to:
-      - "_AXE"
+      - _AXE
 
   WildMagicStrike:
     text: "Wild Magic Strike"
+    material: WILD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %
     effects:
       increase: 1.25
       max-level: 5
     applied-to:
-      - "_SWORD"
+      - _SWORD

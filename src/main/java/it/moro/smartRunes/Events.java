@@ -3,6 +3,7 @@ package it.moro.smartRunes;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
@@ -10,23 +11,25 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 import static it.moro.smartRunes.Runes.*;
 
@@ -45,7 +48,7 @@ public class Events implements Listener {
     String[] WaterMob = {"AXOLOTL", "COD", "DOLPHIN", "GLOW_SQUID", "GUARDIAN", "ELDER_GUARDIAN", "PUFFERFISH", "SALMON", "SQUID", "TROPICAL_FISH", "TURTLE"};
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    public void AssignmentRunes(InventoryClickEvent event) {
         if (event.getClick() == ClickType.RIGHT) return;
         if (event.getAction() == InventoryAction.DROP_ALL_SLOT) return;
         if (event.getAction() == InventoryAction.DROP_ONE_SLOT) return;
@@ -110,6 +113,9 @@ public class Events implements Listener {
             }
             if (indice != -1) {
                 lore.add(Component.text("§7" + runesParameters[indice][0] + " " + romeLevel[runeLvl[index] - 1]));
+                if (runesParameters[indice][0].equalsIgnoreCase("Divine Handiwork")) {
+                    metaTarget.setUnbreakable(true);
+                }
             }
             metaTarget.lore(lore);
         } else {
@@ -155,6 +161,9 @@ public class Events implements Listener {
             for (int q = 0; q < runesParameters.length; q++) {
                 if (livelli[q] > 0) {
                     lore.add(Component.text("§7" + runesParameters[q][0] + " " + romeLevel[livelli[q] - 1]));
+                    if (runesParameters[q][0].equalsIgnoreCase("Divine Handiwork")) {
+                        metaTarget.setUnbreakable(true);
+                    }
                 }
             }
             metaTarget.lore(lore);
@@ -172,9 +181,8 @@ public class Events implements Listener {
         }, 1L);
     }
 
-
     @EventHandler
-    public void onFish(PlayerFishEvent event) {
+    public void AssignmentRunes1(PlayerFishEvent event) {
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
             Player fisher = event.getPlayer();
             double launchSpeed = getDouble("Runes.LongCast.effects.velocity");
@@ -191,6 +199,12 @@ public class Events implements Listener {
                     droppedItem.setVelocity(velocity);
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onFishing(PlayerFishEvent event) {
+        if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
             if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
                 ItemStack utensile = event.getPlayer().getInventory().getItemInMainHand();
                 ItemMeta metaUtensile = utensile.getItemMeta();
@@ -203,7 +217,7 @@ public class Events implements Listener {
                 for (String[] runesParameter : runesParameters) {
                     NamespacedKey key = new NamespacedKey("smartrunes", runesParameter[1].toLowerCase());
                     int value = dataUtensile.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                    if (value <= 0) continue;
+                    if (value == 0) continue;
                     switch (runesParameter[1]) {
                         case "BaitMaster" -> {
                             double newAmount = increase(getDouble("Runes.BaitMaster.effects.increase"), value, pescato.getAmount());
@@ -229,11 +243,14 @@ public class Events implements Listener {
                             }
                         }
                         case "Angler" -> {
-                            int exp = event.getExpToDrop();
-                            double extraExp = increase(getDouble("Runes.Angler.effects.increase"), value, exp);
-                            event.setExpToDrop((int) extraExp);
-                            if (getBoolConfig("DEBUG")) {
-                                event.getPlayer().sendMessage("§a[SmartRunes] Gained " + exp + " + " + String.format("%.1f", (extraExp - exp)) + " XP");
+                            double probability = getDouble("Runes.Angler.effects.increase") * value;
+                            if (checkSuccess(probability)) {
+                                int exp = event.getExpToDrop();
+                                double extraExp = increase(probability, value, exp);
+                                event.setExpToDrop((int) extraExp);
+                                if (getBoolConfig("DEBUG")) {
+                                    event.getPlayer().sendMessage("§a[SmartRunes] Gained " + exp + " + " + String.format("%.1f", (extraExp - exp)) + " XP");
+                                }
                             }
                         }
                     }
@@ -250,15 +267,14 @@ public class Events implements Listener {
                 FishHook hook = event.getHook();
                 Vector currentVelocity = hook.getVelocity();
                 double vel = hook.getVelocity().length();
-                double newVel = increase(getDouble("Runes.BaitMaster.effects.increase"), value, vel);
+                double newVel = increase(getDouble("Runes.LongCast.effects.increase"), value, vel);
                 hook.setVelocity(currentVelocity.multiply(newVel));
                 if (getBoolConfig("DEBUG")) {
                     event.getPlayer().sendMessage("§a[SmartRunes] Default launch distance " + String.format("%.1f", vel) + " + " + String.format("%.1f", newVel));
                 }
             }
         }
-    }
-
+    } // BaitMaster, SaltOfTheSea, Angler, BaitMaster
 
     public static Double increase(double percentuale, double livello, double numero) {
         double probability = percentuale * livello;
@@ -267,7 +283,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onKill(EntityDeathEvent event) {
+    public void AssignmentRunes2(EntityDeathEvent event) {
         event.getDrops().add(divineHandiwork());
         event.getDrops().add(mobHunter());
         event.getDrops().add(wildMagicStrike());
@@ -313,26 +329,30 @@ public class Events implements Listener {
                 event.getDrops().add(littleFish2());
             }
         }
+    }
+
+    @EventHandler
+    public void BlessingOfWisdom(EntityDeathEvent event) {
         Player player = event.getEntity().getKiller();
-        if(player != null) {
+        if (player != null) {
             ItemStack utensile = player.getInventory().getItemInMainHand();
             List<String> lista = getList("Runes.ArtifactHunter.applied-to");
             for (String s : lista) {
                 if (utensile.getType().toString().contains(s)) {
-                    ItemStack[] items = {angler(), antiGravThrow(), artifactHunter(), baitMaster(), blessingOfWisdom(), farmlandManagement(), divineHandiwork(),
-                            enderShot(), expertExtraction(), expertMining(), farmlandManagement(), greenThumb(), littleFish(), longCast(), masterHarvester(),
-                            minersEyes(), mobHunter(), oceansSting(), packAlpha(),phantomArrow(), phantomStrike(), precision(), reinforcement(), resonatingHit(),
-                            saltOfTheSea(), smoothTalker(), treeAntiHugger(), wildMagicStrike()
-                    };
-                    for (ItemStack item : items) {
-                        if (item.getType() != Material.AIR) {
-                            ItemMeta meta = utensile.getItemMeta();
-                            PersistentDataContainer data = meta.getPersistentDataContainer();
-                            NamespacedKey key = new NamespacedKey("smartrunes", "artifacthunter");
-                            int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                            double probability = getDouble("Runes.ArtifactHunter.effects.increase") * level;
-                            if(checkSuccess(probability)){
-                                event.getDrops().add(item);
+                    if (utensile.hasItemMeta()) {
+                        List<String> lista1 = getList("Runes.BlessingOfWisdom.applied-to");
+                        for (String s1 : lista1) {
+                            if (utensile.getType().toString().contains(s1)) {
+                                ItemMeta meta = utensile.getItemMeta();
+                                PersistentDataContainer data = meta.getPersistentDataContainer();
+                                NamespacedKey key = new NamespacedKey("smartrunes", "blessingofwisdom");
+                                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                                if (level > 0) {
+                                    double incremento = getDouble("Runes.BlessingOfWisdom.effects.increase");
+                                    double exp = event.getDroppedExp();
+                                    exp = increase(incremento, level, exp);
+                                    event.setDroppedExp((int) Math.round(exp));
+                                }
                             }
                         }
                     }
@@ -342,7 +362,45 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBreak(BlockBreakEvent event) {
+    public void ArtifactHunter(EntityDeathEvent event) {
+        Player player = event.getEntity().getKiller();
+        if (player != null) {
+            ItemStack[] armor = {player.getInventory().getHelmet(), player.getInventory().getChestplate(),
+                    player.getInventory().getLeggings(), player.getInventory().getBoots()};
+            boolean ritorno = false;
+            for (ItemStack pezzo : armor) {
+                if(pezzo == null){ return;}
+                if (pezzo.hasItemMeta()) {
+                    ItemMeta meta = pezzo.getItemMeta();
+                    PersistentDataContainer data = meta.getPersistentDataContainer();
+                    NamespacedKey key = new NamespacedKey("smartrunes", "artifacthunter");
+                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                    if (level == 0) {
+                        ritorno = true;
+                    }
+                } else {
+                    ritorno = true;
+                }
+            }
+            if (ritorno) {
+                return;
+            }
+            ItemStack[] items = {angler(), antiGravThrow(), artifactHunter(), baitMaster(), blessingOfWisdom(), farmlandManagement(), divineHandiwork(),
+                    enderShot(), expertExtraction(), expertMining(), farmlandManagement(), greenThumb(), littleFish(), longCast(), masterHarvester(),
+                    minersEyes(), mobHunter(), oceansSting(), packAlpha(), phantomArrow(), phantomStrike(), precision(), reinforcement(), resonatingHit(),
+                    saltOfTheSea(), smoothTalker(), treeAntiHugger(), wildMagicStrike()
+            };
+            double probability = getDouble("Runes.ArtifactHunter.effects.probability");
+            for (ItemStack item : items) {
+                if (checkSuccess(probability)) {
+                    event.getDrops().add(item);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void AssignmentRunes3(BlockBreakEvent event) {
         Block block = event.getBlock();
         if (isPlantTable(block.getType())) {
             BlockData blockData = block.getBlockData();
@@ -393,6 +451,129 @@ public class Events implements Listener {
                 if (i >= 4) {
                     event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), artifactHunter());
                     event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), resonatingHit());
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void BlessingOfWisdom(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        ItemStack utensile = player.getInventory().getItemInMainHand();
+        if (utensile.hasItemMeta()) {
+            List<String> lista = getList("Runes.BlessingOfWisdom.applied-to");
+            for (String s : lista) {
+                if (utensile.getType().toString().contains(s)) {
+                    ItemMeta meta = utensile.getItemMeta();
+                    PersistentDataContainer data = meta.getPersistentDataContainer();
+                    NamespacedKey key = new NamespacedKey("smartrunes", "blessingofwisdom");
+                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                    if (level > 0) {
+                        double incremento = getDouble("Runes.BlessingOfWisdom.effects.increase");
+                        double exp = event.getExpToDrop();
+                        exp = increase(incremento, level, exp);
+                        event.setExpToDrop((int) Math.round(exp));
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void ExpertExtraction(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.ExpertExtraction.applied-to");
+        for (String s : lista) {
+            if (tool.getType().toString().contains(s)) {
+                if (tool.hasItemMeta()) {
+                    ItemMeta meta = tool.getItemMeta();
+                    PersistentDataContainer data = meta.getPersistentDataContainer();
+                    NamespacedKey key = new NamespacedKey("smartrunes", "expertextraction");
+                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                    if (level > 0) {
+                        Block startBlock = event.getBlock();
+                        if (!isSupportedOre(startBlock.getType())) return;
+                        Set<Block> vein = getConnectedOres(startBlock);
+                        for (Block block : vein) {
+                            block.breakNaturally(tool);
+                            damageTool(tool, player);
+                        }
+                        event.setCancelled(true);
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isSupportedOre(Material type) {
+        return switch (type) {
+            case COAL_ORE, IRON_ORE, COPPER_ORE, GOLD_ORE,
+                 REDSTONE_ORE, LAPIS_ORE, DIAMOND_ORE, EMERALD_ORE,
+                 DEEPSLATE_COAL_ORE, DEEPSLATE_IRON_ORE, DEEPSLATE_COPPER_ORE,
+                 DEEPSLATE_GOLD_ORE, DEEPSLATE_REDSTONE_ORE, DEEPSLATE_LAPIS_ORE,
+                 DEEPSLATE_DIAMOND_ORE, DEEPSLATE_EMERALD_ORE -> true;
+            default -> false;
+        };
+    }
+
+    private Set<Block> getConnectedOres(Block start) {
+        Set<Block> result = new HashSet<>();
+        Queue<Block> toCheck = new LinkedList<>();
+        toCheck.add(start);
+        while (!toCheck.isEmpty() && result.size() < getInt("Runes.ExpertExtraction.effects.max-blocks")) {
+            Block current = toCheck.poll();
+            if (current != null) {
+                if (!result.contains(current) && current.getType() == start.getType()) {
+                    result.add(current);
+                    for (BlockFace face : BlockFace.values()) {
+                        Block adjacent = current.getRelative(face);
+                        if (adjacent.getType() == start.getType()) {
+                            toCheck.add(adjacent);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private void damageTool(ItemStack tool, Player player) {
+        if (tool == null || tool.getType() == Material.AIR) return;
+        ItemMeta meta = tool.getItemMeta();
+        if (meta == null || meta.isUnbreakable()) return;
+        if (meta instanceof Damageable damageable) {
+            int damage = damageable.getDamage() + 1;
+            damageable.setDamage(damage);
+            tool.setItemMeta(meta);
+            if (damage >= tool.getType().getMaxDurability()) {
+                player.getInventory().remove(tool);
+                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            }
+        }
+    }
+
+    @EventHandler
+    public void EnderShot(ProjectileHitEvent event) {
+        if (!(event.getEntity() instanceof Arrow arrow)) return;
+        if (!(arrow.getShooter() instanceof Player player)) return;
+        ItemStack arco = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.EnderShot.applied-to");
+        for (String s : lista) {
+            if (arco.getType().toString().contains(s)) {
+                ItemMeta meta = arco.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "endershot");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    Location hitLocation = arrow.getLocation().clone().add(0, 1, 0);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            player.teleport(hitLocation);
+                            player.playSound(hitLocation, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+                        }
+                    }.runTaskLater(plugin, 1); // leggero delay per sicurezza
                 }
             }
         }
@@ -456,6 +637,299 @@ public class Events implements Listener {
                                     break;
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void AntiGravThrow(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        ItemStack utensile = player.getInventory().getItemInMainHand();
+        if (!utensile.hasItemMeta()) return;
+        List<String> lista = getList("Runes.AntiGravThrow.applied-to");
+        for (String s : lista) {
+            if (utensile.getType().toString().contains(s)) {
+                ItemMeta meta = utensile.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "antigravthrow");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    double blocchi = getDouble("Runes.AntiGravThrow.effects.increase") * level + 2;
+                    double yVelocity = Math.sqrt(2 * 0.08 * blocchi);
+                    Vector dir = new Vector(0, yVelocity, 0);
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> target.setVelocity(dir), 1L);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void ExpertMining(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.ExpertMining.applied-to");
+
+        for (String s : lista) {
+            if (item.getType().toString().contains(s)) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta == null) return;
+
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "expertmining");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+
+                if (level > 0) {
+                    float blockHardness = block.getType().getHardness();
+                    boolean isValidBlock = blockHardness <= 1.0f || item.getType().toString().contains("_PICKAXE");
+
+                    if (isValidBlock) {
+                        int radius = level == 1 ? 1 : 2;
+                        Location blockLocation = block.getLocation();
+
+                        for (int x = -radius; x <= radius; x++) {
+                            for (int y = -radius; y <= radius; y++) {
+                                for (int z = -radius; z <= radius; z++) {
+                                    Location location = blockLocation.clone().add(x, y, z);
+                                    Block surroundingBlock = location.getBlock();
+
+                                    if (!surroundingBlock.equals(block) && surroundingBlock.getType() == block.getType()) {
+                                        surroundingBlock.breakNaturally(item);
+                                        damageTool(item, player);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void FarmlandManagement(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.FarmlandManagement.applied-to");
+        for (String s : lista) {
+            if (item.getType().toString().contains(s)) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta == null) return;
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "farmlandmanagement");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level <= 0) return;
+                int radius;
+                switch (level) {
+                    case 1 -> radius = 1;
+                    case 2 -> radius = 2;
+                    case 4 -> radius = 3;
+                    case 5 -> radius = 4;
+                    default -> {
+                        return;
+                    }
+                }
+                Location blockLocation = block.getLocation();
+                for (int x = -radius; x <= radius; x++) {
+                    for (int z = -radius; z <= radius; z++) {
+                        Location checkLoc = blockLocation.clone().add(x, 0, z);
+                        Block checkBlock = checkLoc.getBlock();
+                        if (checkBlock.getType() == Material.MELON_STEM || checkBlock.getType() == Material.PUMPKIN_STEM)
+                            continue;
+                        if (checkBlock.getBlockData() instanceof Ageable ageable) {
+                            if (ageable.getAge() == ageable.getMaximumAge()) {
+                                checkBlock.breakNaturally(item);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void GreenThumb(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.GreenThumb.applied-to");
+        for (String s : lista) {
+            if (item.getType().toString().contains(s)) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta == null) return;
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "greenthumb");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level <= 0) return;
+                Location blockLocation = block.getLocation();
+                for (int x = -level; x <= level; x++) {
+                    for (int z = -level; z <= level; z++) {
+                        Location checkLoc = blockLocation.clone().add(x, 0, z);
+                        Block targetBlock = checkLoc.getBlock();
+                        if (targetBlock.getType() == Material.MELON || targetBlock.getType() == Material.PUMPKIN)
+                            continue;
+                        if (targetBlock.getBlockData() instanceof Ageable ageable && ageable.getAge() == ageable.getMaximumAge()) {
+                            Material cropType = targetBlock.getType();
+                            targetBlock.breakNaturally(item);
+                            Block soil = checkLoc.clone().subtract(0, 1, 0).getBlock();
+                            if (soil.getType() == Material.FARMLAND) {
+                                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                    Material seed = getSeedFromCrop(cropType);
+                                    if (seed != null) {
+                                        targetBlock.setType(cropType);
+                                        BlockData newData = targetBlock.getBlockData();
+                                        if (newData instanceof Ageable newAgeable) {
+                                            newAgeable.setAge(0);
+                                            targetBlock.setBlockData(newAgeable);
+                                        }
+                                        player.getInventory().removeItem(new ItemStack(seed, 1));
+                                    }
+                                }, 1L);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private Material getSeedFromCrop(Material crop) {
+        return switch (crop) {
+            case WHEAT -> Material.WHEAT_SEEDS;
+            case CARROTS -> Material.CARROT;
+            case POTATOES -> Material.POTATO;
+            case BEETROOTS -> Material.BEETROOT_SEEDS;
+            default -> null;
+        };
+    }
+
+    @EventHandler
+    public void LittleFish(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (event.getCause() != EntityDamageEvent.DamageCause.DROWNING) return;
+        ItemStack helmet = player.getInventory().getHelmet();
+        if (helmet == null || helmet.getType() == Material.AIR) return;
+        List<String> lista = getList("Runes.LittleFish.applied-to");
+        for (String s : lista) {
+            if (helmet.getType().toString().contains(s)) {
+                ItemMeta meta = helmet.getItemMeta();
+                if (meta == null) return;
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "littlefish");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    event.setCancelled(true);
+                    player.setRemainingAir(player.getMaximumAir());
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void MinersEyes(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        ItemStack helmet = player.getInventory().getHelmet();
+        if (helmet == null || helmet.getType() == Material.AIR) return;
+        List<String> lista = getList("Runes.MinersEyes.applied-to");
+        for (String s : lista) {
+            if (helmet.getType().toString().contains(s)) {
+                ItemMeta meta = helmet.getItemMeta();
+                if (meta == null) return;
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "minerseyes");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 220, 0, false, false, false));
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void MobHunter(EntityDeathEvent event) {
+        Entity entity = event.getEntity();
+        Player killer = event.getEntity().getKiller();
+        if (killer == null) return;
+        ItemStack arma = killer.getInventory().getItemInMainHand();
+        if (!arma.hasItemMeta()) {
+            return;
+        }
+        List<String> lista = getList("Runes.MobHunter.applied-to");
+        for (String s : lista) {
+            if (arma.getType().toString().contains(s)) {
+                ItemMeta meta = arma.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "mobhunter");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    int chance = getInt("Runes.MobHunter.effects.chance-drop-egg");
+                    if (checkSuccess(chance)) {
+                        Material eggMaterial = Material.getMaterial(entity.getType().name() + "_SPAWN_EGG");
+                        if (eggMaterial != null) {
+                            ItemStack spawnEgg = new ItemStack(eggMaterial);
+                            entity.getWorld().dropItemNaturally(entity.getLocation(), spawnEgg);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void OceansSting(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        ItemStack arma = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.OceansSting.applied-to");
+        for (String s : lista) {
+            if (arma.getType().toString().contains(s)) {
+                if (arma.hasItemMeta()) {
+                    ItemMeta meta = arma.getItemMeta();
+                    PersistentDataContainer data = meta.getPersistentDataContainer();
+                    NamespacedKey key = new NamespacedKey("smartrunes", "oceanssting");
+                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                    if (level > 0) {
+                        EntityType type = target.getType();
+                        if (type == EntityType.ENDERMAN || type == EntityType.BLAZE) {
+                            double danno = event.getDamage();
+                            double extraDamage = increase(getInt("Runes.OceansSting.applied-to"), level, danno);
+                            event.setDamage(extraDamage);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void PhantomArrow(EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (event.getConsumable() != null && event.getConsumable().getType() == Material.ARROW) {
+            ItemStack arco = event.getBow();
+            if (arco == null) {
+                return;
+            }
+            if (!arco.hasItemMeta()) {
+                return;
+            }
+            List<String> lista = getList("Runes.PhantomArrow.applied-to");
+            for (String s : lista) {
+                if (arco.getType().toString().contains(s)) {
+                    ItemMeta meta = arco.getItemMeta();
+                    PersistentDataContainer data = meta.getPersistentDataContainer();
+                    NamespacedKey key = new NamespacedKey("smartrunes", "phantomarrow");
+                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                    if(level > 0) {
+                        double incremento = getDouble("Runes.PhantomArrow.effects.increase") * 0.01;
+                        if (Math.random() <= level * incremento) {
+                            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () -> {
+                                player.getInventory().addItem(new ItemStack(Material.ARROW));
+                            }, 1L);
                         }
                     }
                 }
