@@ -2,6 +2,8 @@ package it.moro.smartRunes;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -116,6 +118,11 @@ public class Events implements Listener {
                 if (runesParameters[indice][0].equalsIgnoreCase("Divine Handiwork")) {
                     metaTarget.setUnbreakable(true);
                 }
+                if (runesParameters[indice][0].equalsIgnoreCase("Reinforcement")) {
+                    NamespacedKey example = new NamespacedKey(plugin, "max_health_increase");
+                    AttributeModifier addHeal = new AttributeModifier(example, getDouble("Runes.Reinforcement.effects.increase"), AttributeModifier.Operation.ADD_NUMBER);
+                    metaTarget.addAttributeModifier(Attribute.GENERIC_MAX_HEALTH, addHeal);
+                }
             }
             metaTarget.lore(lore);
         } else {
@@ -164,6 +171,11 @@ public class Events implements Listener {
                     if (runesParameters[q][0].equalsIgnoreCase("Divine Handiwork")) {
                         metaTarget.setUnbreakable(true);
                     }
+                    if (runesParameters[q][0].equalsIgnoreCase("Reinforcement")) {
+                        NamespacedKey example = new NamespacedKey(plugin, "max_health_increase");
+                        AttributeModifier addHeal = new AttributeModifier(example, getDouble("Runes.Reinforcement.effects.increase"), AttributeModifier.Operation.ADD_NUMBER);
+                        metaTarget.addAttributeModifier(Attribute.GENERIC_MAX_HEALTH, addHeal);
+                    }
                 }
             }
             metaTarget.lore(lore);
@@ -179,7 +191,7 @@ public class Events implements Listener {
             }
             player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
         }, 1L);
-    }
+    } //DivineHandiwork
 
     @EventHandler
     public void AssignmentRunes1(PlayerFishEvent event) {
@@ -229,13 +241,18 @@ public class Events implements Listener {
                         case "SaltOfTheSea" -> {
                             double probability = getDouble("Runes.SaltOfTheSea.effects.increase") * value;
                             if (checkSuccess(probability)) {
+                                int amount = pescato.getAmount();
                                 if (pescato.getType() == Material.SALMON) {
-                                    pescato.setType(Material.COOKED_SALMON);
+                                    ItemStack salmone = new ItemStack(Material.COOKED_SALMON);
+                                    salmone.setAmount(amount);
+                                    pescato = salmone;
                                     if (getBoolConfig("DEBUG")) {
                                         event.getPlayer().sendMessage("§a[SmartRunes] The fish SALMON was cooked");
                                     }
                                 } else if (pescato.getType() == Material.COD) {
-                                    pescato.setType(Material.COOKED_COD);
+                                    ItemStack merluzzo = new ItemStack(Material.COOKED_COD);
+                                    merluzzo.setAmount(amount);
+                                    pescato = merluzzo;
                                     if (getBoolConfig("DEBUG")) {
                                         event.getPlayer().sendMessage("§a[SmartRunes] The fish COD was cooked");
                                     }
@@ -274,7 +291,7 @@ public class Events implements Listener {
                 }
             }
         }
-    } // BaitMaster, SaltOfTheSea, Angler, BaitMaster
+    } // BaitMaster, SaltOfTheSea, Angler, BaitMaster, LongCast
 
     public static Double increase(double percentuale, double livello, double numero) {
         double probability = percentuale * livello;
@@ -369,7 +386,9 @@ public class Events implements Listener {
                     player.getInventory().getLeggings(), player.getInventory().getBoots()};
             boolean ritorno = false;
             for (ItemStack pezzo : armor) {
-                if(pezzo == null){ return;}
+                if (pezzo == null) {
+                    return;
+                }
                 if (pezzo.hasItemMeta()) {
                     ItemMeta meta = pezzo.getItemMeta();
                     PersistentDataContainer data = meta.getPersistentDataContainer();
@@ -895,10 +914,14 @@ public class Events implements Listener {
                     int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
                     if (level > 0) {
                         EntityType type = target.getType();
-                        if (type == EntityType.ENDERMAN || type == EntityType.BLAZE) {
-                            double danno = event.getDamage();
-                            double extraDamage = increase(getInt("Runes.OceansSting.applied-to"), level, danno);
-                            event.setDamage(extraDamage);
+                        EntityType[] mobs = new EntityType[]{EntityType.ENDERMAN, EntityType.BLAZE, EntityType.MAGMA_CUBE,
+                                EntityType.STRIDER, EntityType.WITHER_SKELETON, EntityType.HUSK, EntityType.WITHER};
+                        for (EntityType mob : mobs) {
+                            if (type == mob) {
+                                double danno = event.getDamage();
+                                double extraDamage = increase(getInt("Runes.OceansSting.applied-to"), level, danno);
+                                event.setDamage(extraDamage);
+                            }
                         }
                     }
                 }
@@ -924,13 +947,71 @@ public class Events implements Listener {
                     PersistentDataContainer data = meta.getPersistentDataContainer();
                     NamespacedKey key = new NamespacedKey("smartrunes", "phantomarrow");
                     int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                    if(level > 0) {
+                    if (level > 0) {
                         double incremento = getDouble("Runes.PhantomArrow.effects.increase") * 0.01;
                         if (Math.random() <= level * incremento) {
-                            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () -> {
-                                player.getInventory().addItem(new ItemStack(Material.ARROW));
-                            }, 1L);
+                            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () ->
+                                    player.getInventory().addItem(new ItemStack(Material.ARROW)), 1L);
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void PhantomStrike(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        ItemStack weapon = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.PhantomStrike.applied-to");
+        boolean isValidWeapon = lista.stream().anyMatch(type -> weapon.getType().toString().contains(type));
+        if (!isValidWeapon || !weapon.hasItemMeta()) return;
+        ItemMeta meta = weapon.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        NamespacedKey key = new NamespacedKey("smartrunes", "phantomstrike");
+        int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+        if (level > 0) {
+            double baseDamage = event.getDamage();
+            double chance = level * getDouble("Runes.PhantomStrike.effects.increase") * 0.01;
+            if (Math.random() <= chance) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (!target.isDead()) {
+                        target.damage(baseDamage);
+                    }
+                }, 20L);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onHit(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        ItemStack weapon = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.WildMagicStrike.applied-to");
+        for (String s : lista) {
+            if (weapon.getType().toString().contains(s)) {
+                ItemMeta meta = weapon.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "wildmagicstrike");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if(level > 0) {
+                    double incremento = getDouble("Runes.WildMagicStrike.effects.increase") * 0.01;
+                    if (Math.random() <= incremento * level) {
+                        PotionEffectType[] negativeEffects = {
+                                PotionEffectType.POISON,
+                                PotionEffectType.SLOWNESS,
+                                PotionEffectType.WEAKNESS,
+                                PotionEffectType.BLINDNESS,
+                                PotionEffectType.WITHER,
+                                PotionEffectType.DARKNESS,
+                                PotionEffectType.INSTANT_DAMAGE,
+                                PotionEffectType.LEVITATION,
+                                PotionEffectType.NAUSEA
+                        };
+                        PotionEffectType randomEffect = negativeEffects[(int) (Math.random() * negativeEffects.length)];
+                        target.addPotionEffect(new PotionEffect(randomEffect, 100, 1)); // 5 secondi, livello 2
                     }
                 }
             }

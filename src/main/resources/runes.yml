@@ -61,7 +61,6 @@ Runes:
     material: COAST_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.01 #0.01 %
     effects:
-      increase: 1
       max-level: 1
     applied-to:
       - _PICKAXE
@@ -80,7 +79,6 @@ Runes:
     material: SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
-      increase: 1
       max-level: 1
     applied-to:
       - BOW
@@ -92,6 +90,7 @@ Runes:
     chance-drop: 0.04 #0.04 %
     effects:
       max-blocks: 10
+      max-level: 1
     applied-to:
       - _PICKAXE
 
@@ -144,6 +143,7 @@ Runes:
     applied-to:
       - FISHING_ROD
 
+  # DA IMPLEMENTARE
   MasterHarvester: #0.02 %
     text: "Master Harvester"
     material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -186,6 +186,7 @@ Runes:
     applied-to:
       - _SWORD
 
+  # DA IMPLEMENTARE
   PackAlpha:
     text: "Pack Alpha"
     material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -221,6 +222,7 @@ Runes:
       - _AXE
       - MACE
 
+  # DA IMPLEMENTARE
   Precision:
     text: "Precision"
     material: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -241,7 +243,7 @@ Runes:
     chance-drop-tree: 0.02 #0.02 %
     chance-drop-ores: 0.02 #0.02 %
     effects:
-      increase: 2.5
+      increase: 5
       max-level: 1
     applied-to:
       - _CHESTPLATE
@@ -249,6 +251,7 @@ Runes:
       - _HELMET
       - _LEGGINGS
 
+  # DA IMPLEMENTARE
   ResonatingHit:
     text: "Resonating Hit"
     material: SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -270,6 +273,7 @@ Runes:
     applied-to:
       - FISHING_ROD
 
+  # DA IMPLEMENTARE
   SmoothTalker:
     text: "Smooth Talker"
     material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -280,6 +284,7 @@ Runes:
     applied-to:
       - GOLDEN_CHESTPLATE
 
+  # DA IMPLEMENTARE
   TreeAntiHugger:
     text: "Tree Anti-Hugger"
     material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
