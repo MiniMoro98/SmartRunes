@@ -57,7 +57,7 @@ public class Events implements Listener {
         if (cursor == target) return;
         if (target == null) return;
         if (target.getType() == Material.AIR) return;
-        if (cursor.getType() != Material.PLAYER_HEAD) return;
+        if (!cursor.getType().toString().contains("_ARMOR_TRIM_SMITHING_TEMPLATE")) return;
         ItemMeta meta = cursor.getItemMeta();
         if (meta == null) return;
         if (cursor.getItemMeta().getPersistentDataContainer().isEmpty()) return;
@@ -66,7 +66,7 @@ public class Events implements Listener {
         int[] runeLvl = new int[27];
         int index = 0;
         for (int f = 0; f < runesParameters.length; f++) {
-            String id = runesParameters[f][3].toLowerCase();
+            String id = runesParameters[f][1].toLowerCase();
             NamespacedKey key = new NamespacedKey("smartrunes", id);
             if (data.has(key, PersistentDataType.INTEGER)) {
                 Integer value = data.get(key, PersistentDataType.INTEGER);
@@ -74,7 +74,7 @@ public class Events implements Listener {
                     if (value > 0) {
                         array[f][0] = id;
                         runeLvl[f] = value;
-                        array[f][1] = runesParameters[f][3];
+                        array[f][1] = runesParameters[f][1];
                         index = f;
                     }
                 }
@@ -96,7 +96,7 @@ public class Events implements Listener {
         PersistentDataContainer dataTarget = metaTarget.getPersistentDataContainer();
         if (dataTarget.isEmpty()) {
             for (String[] runes : runesParameters) {
-                NamespacedKey key1 = new NamespacedKey("smartrunes", runes[3].toLowerCase());
+                NamespacedKey key1 = new NamespacedKey("smartrunes", runes[1].toLowerCase());
                 data.set(key1, PersistentDataType.INTEGER, 0);
             }
             List<Component> lore = new ArrayList<>();
@@ -104,18 +104,18 @@ public class Events implements Listener {
             dataTarget.set(key, PersistentDataType.INTEGER, runeLvl[index]);
             int indice = -1;
             for (int a = 0; a < runesParameters.length; a++) {
-                if (array[index][0].equalsIgnoreCase(runesParameters[a][3].toLowerCase())) {
+                if (array[index][0].equalsIgnoreCase(runesParameters[a][1].toLowerCase())) {
                     indice = a;
                 }
             }
             if (indice != -1) {
-                lore.add(Component.text("§7" + runesParameters[indice][2] + " " + romeLevel[runeLvl[index] - 1]));
+                lore.add(Component.text("§7" + runesParameters[indice][0] + " " + romeLevel[runeLvl[index] - 1]));
             }
             metaTarget.lore(lore);
         } else {
             int[] livelli = new int[27];
             for (int s = 0; s < runesParameters.length; s++) {
-                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[s][3].toLowerCase());
+                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[s][1].toLowerCase());
                 if (dataTarget.has(key, PersistentDataType.INTEGER)) {
                     Integer value1 = dataTarget.get(key, PersistentDataType.INTEGER);
                     if (value1 != null) {
@@ -125,7 +125,7 @@ public class Events implements Listener {
             }
             boolean ritorno = false;
             for (int s = 0; s < runesParameters.length; s++) {
-                Double maxLevel = getDouble("Runes." + runesParameters[s][3] + ".effects.max-level");
+                Double maxLevel = getDouble("Runes." + runesParameters[s][1] + ".effects.max-level");
                 int attuale = livelli[s];
                 int nuovo = runeLvl[s];
                 if (nuovo > 0) {
@@ -148,13 +148,13 @@ public class Events implements Listener {
             }
             if (ritorno) return;
             for (int v = 0; v < runesParameters.length; v++) {
-                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[v][3].toLowerCase());
+                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[v][1].toLowerCase());
                 dataTarget.set(key, PersistentDataType.INTEGER, livelli[v]);
             }
             List<Component> lore = new ArrayList<>();
             for (int q = 0; q < runesParameters.length; q++) {
                 if (livelli[q] > 0) {
-                    lore.add(Component.text("§7" + runesParameters[q][2] + " " + romeLevel[livelli[q] - 1]));
+                    lore.add(Component.text("§7" + runesParameters[q][0] + " " + romeLevel[livelli[q] - 1]));
                 }
             }
             metaTarget.lore(lore);
@@ -201,10 +201,10 @@ public class Events implements Listener {
                 ItemStack pescato = caught.getItemStack();
                 int amountOriginale = pescato.getAmount();
                 for (String[] runesParameter : runesParameters) {
-                    NamespacedKey key = new NamespacedKey("smartrunes", runesParameter[3].toLowerCase());
+                    NamespacedKey key = new NamespacedKey("smartrunes", runesParameter[1].toLowerCase());
                     int value = dataUtensile.getOrDefault(key, PersistentDataType.INTEGER, 0);
                     if (value <= 0) continue;
-                    switch (runesParameter[3]) {
+                    switch (runesParameter[1]) {
                         case "BaitMaster" -> {
                             double newAmount = increase(getDouble("Runes.BaitMaster.effects.increase"), value, pescato.getAmount());
                             pescato.setAmount((int) newAmount);
@@ -321,12 +321,19 @@ public class Events implements Listener {
                 if (utensile.getType().toString().contains(s)) {
                     ItemStack[] items = {angler(), antiGravThrow(), artifactHunter(), baitMaster(), blessingOfWisdom(), farmlandManagement(), divineHandiwork(),
                             enderShot(), expertExtraction(), expertMining(), farmlandManagement(), greenThumb(), littleFish(), longCast(), masterHarvester(),
-                            minersEyes(), mobHunter(), oceansSting(), packAlpha(),phantomArrow(), phantomStrike(), precision(), reinforcement(),
+                            minersEyes(), mobHunter(), oceansSting(), packAlpha(),phantomArrow(), phantomStrike(), precision(), reinforcement(), resonatingHit(),
+                            saltOfTheSea(), smoothTalker(), treeAntiHugger(), wildMagicStrike()
                     };
                     for (ItemStack item : items) {
                         if (item.getType() != Material.AIR) {
-
-                            break;
+                            ItemMeta meta = utensile.getItemMeta();
+                            PersistentDataContainer data = meta.getPersistentDataContainer();
+                            NamespacedKey key = new NamespacedKey("smartrunes", "artifacthunter");
+                            int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                            double probability = getDouble("Runes.ArtifactHunter.effects.increase") * level;
+                            if(checkSuccess(probability)){
+                                event.getDrops().add(item);
+                            }
                         }
                     }
                 }

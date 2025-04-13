@@ -47,7 +47,6 @@ public class Commands implements CommandExecutor, TabCompleter {
                                 player.sendMessage("§6" + id + ": §f" + value);
                             }
                         });
-
                         return true;
                     }
                 }
@@ -76,15 +75,12 @@ public class Commands implements CommandExecutor, TabCompleter {
     public Map<String, Integer> readRuneEnchantLevels(ItemMeta meta, String[][] runesParameters) {
         Map<String, Integer> values = new HashMap<>();
         PersistentDataContainer data = meta.getPersistentDataContainer();
-
         for (String[] runesParameter : runesParameters) {
-            String enchantId = runesParameter[3]; // ID dell'enchant
+            String enchantId = runesParameter[1];
             NamespacedKey key = new NamespacedKey("smartrunes", enchantId.toLowerCase());
-
             Integer value = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
             values.put(enchantId, value);
         }
-
         return values;
     }
 }
