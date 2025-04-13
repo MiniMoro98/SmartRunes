@@ -313,6 +313,25 @@ public class Events implements Listener {
                 event.getDrops().add(littleFish2());
             }
         }
+        Player player = event.getEntity().getKiller();
+        if(player != null) {
+            ItemStack utensile = player.getInventory().getItemInMainHand();
+            List<String> lista = getList("Runes.ArtifactHunter.applied-to");
+            for (String s : lista) {
+                if (utensile.getType().toString().contains(s)) {
+                    ItemStack[] items = {angler(), antiGravThrow(), artifactHunter(), baitMaster(), blessingOfWisdom(), farmlandManagement(), divineHandiwork(),
+                            enderShot(), expertExtraction(), expertMining(), farmlandManagement(), greenThumb(), littleFish(), longCast(), masterHarvester(),
+                            minersEyes(), mobHunter(), oceansSting(), packAlpha(),phantomArrow(), phantomStrike(), precision(), reinforcement(),
+                    };
+                    for (ItemStack item : items) {
+                        if (item.getType() != Material.AIR) {
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @EventHandler
