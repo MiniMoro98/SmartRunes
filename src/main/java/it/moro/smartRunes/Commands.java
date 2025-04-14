@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static it.moro.smartRunes.Runes.*;
+
 public class Commands implements CommandExecutor, TabCompleter {
 
     private static SmartRunes plugin;
@@ -25,28 +27,44 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(sender instanceof Player player){
-            if(command.getName().equalsIgnoreCase("runes")){
-                if(args.length > 0){
-                    if(args[0].equalsIgnoreCase("reload")){
+        if (sender instanceof Player player) {
+            if (command.getName().equalsIgnoreCase("runes")) {
+                if (args.length > 0) {
+                    if (args[0].equalsIgnoreCase("reload")) {
                         Runes.loadFile();
                         player.sendMessage("§a[SmartRunes] Configuration Reloaded!");
                         return true;
-                    } else if(args[0].equalsIgnoreCase("info")){
+                    } else if (args[0].equalsIgnoreCase("info")) {
                         ItemStack item = player.getInventory().getItemInMainHand();
                         if (!item.hasItemMeta()) {
                             player.sendMessage("You have no object in your hand!");
                             return true;
                         }
                         ItemMeta meta = item.getItemMeta();
-                        Map<String, Integer> enchantValues = readRuneEnchantLevels(meta, Runes.runesParameters);
+                        Map<String, Integer> enchantValues = readRuneEnchantLevels(meta, runesParameters);
 
                         player.sendMessage("§e[SmartRunes] §7Rune Values:");
                         enchantValues.forEach((id, value) -> {
-                            if(value > 0){
+                            if (value > 0) {
                                 player.sendMessage("§6" + id + ": §f" + value);
                             }
                         });
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("give")) {
+                        int index = 0;
+                        for (String[] enchant : runesParameters) {
+                            if (args[1].equalsIgnoreCase(enchant[1])) {
+                                int lvl = Integer.parseInt(args[2]);
+                                if(lvl > getInt("Runes." + args[1] + ".effects.max-level")){
+                                    lvl  = getInt("Runes." + args[1] + ".effects.max-level");
+                                }
+                                ItemStack runa = rune(enchant[1], 100.0, index, lvl);
+                                player.getInventory().addItem(runa);
+                                return true;
+                            }
+                            index++;
+                        }
+                        player.sendMessage("§cUnrecognized rune!!");
                         return true;
                     }
                 }
@@ -58,19 +76,37 @@ public class Commands implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equalsIgnoreCase("runes")) {
-            Player player = (Player) sender;
-            List<String> actions = new ArrayList<>();
+            if (!(sender instanceof Player player)) return Collections.emptyList();
+            List<String> suggestions = new ArrayList<>();
             if (args.length == 1) {
-                if (player.hasPermission("smartrunes.reload")) {
-                    actions.add("reload");
-                }
-                actions.add("info");
+                if (player.hasPermission("smartrunes.reload")) suggestions.add("reload");
+                if (player.hasPermission("smartrunes.give")) suggestions.add("give");
+                suggestions.add("info");
+                return suggestions.stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                        .toList();
             }
-            return new ArrayList<>(actions.stream().filter(a -> a.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .toList());
+            if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
+                for (String[] enchant : runesParameters) {
+                    suggestions.add(enchant[1]);
+                }
+                return suggestions.stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                        .toList();
+            }
+            if(args.length == 3 && args[0].equalsIgnoreCase("give")){
+                int max = getInt("Runes." + args[1] + ".effects.max-level");
+                for(int i = 0; i < max; i++){
+                    suggestions.add(String.valueOf(i+1));
+                }
+                return suggestions.stream()
+                        .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
+                        .toList();
+            }
         }
-        return null;
+        return Collections.emptyList();
     }
+
 
     public Map<String, Integer> readRuneEnchantLevels(ItemMeta meta, String[][] runesParameters) {
         Map<String, Integer> values = new HashMap<>();

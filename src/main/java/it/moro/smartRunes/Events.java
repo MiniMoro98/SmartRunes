@@ -39,6 +39,8 @@ public class Events implements Listener {
 
     private static SmartRunes plugin;
 
+    private final Map<UUID, List<Wolf>> playerWolves = new HashMap<>();
+
     public Events(SmartRunes plugin) {
         Events.plugin = plugin;
     }
@@ -304,46 +306,49 @@ public class Events implements Listener {
         event.getDrops().add(divineHandiwork());
         event.getDrops().add(mobHunter());
         event.getDrops().add(wildMagicStrike());
-        if (event.getEntity() instanceof Monster) {
-            event.getDrops().add(artifactHunter());
-            event.getDrops().add(blessingOfWisdom());
-            event.getDrops().add(reinforcement1());
-            if (event.getEntity().getType() == EntityType.CREEPER) {
-                event.getDrops().add(antiGravThrow());
-            } else if (event.getEntity().getType() == EntityType.ENDERMAN) {
-                event.getDrops().add(enderShot());
-            } else if (event.getEntity().getType() == EntityType.SPIDER || event.getEntity().getType() == EntityType.ZOMBIE || event.getEntity().getType() == EntityType.SKELETON) {
-                event.getDrops().add(minersEyes1());
-                if (event.getEntity().getType() == EntityType.SKELETON) {
-                    event.getDrops().add(phantomArrow());
-                }
-            } else if (event.getEntity().getType() == EntityType.DROWNED || event.getEntity().getType() == EntityType.GUARDIAN || event.getEntity().getType() == EntityType.ELDER_GUARDIAN) {
-                event.getDrops().add(oceansSting());
-                if (event.getEntity().getType() == EntityType.DROWNED) {
-                    event.getDrops().add(minersEyes2());
-                }
-            } else if (event.getEntity().getType() == EntityType.PILLAGER) {
-                event.getDrops().add(phantomArrow1());
-                event.getDrops().add(phantomStrike1());
-                event.getDrops().add(precision1());
-                event.getDrops().add(treeAntiHugger1());
-            } else if (event.getEntity().getType() == EntityType.WITHER_SKELETON) {
-                event.getDrops().add(phantomStrike());
-                event.getDrops().add(precision());
-            } else if (event.getEntity().getType() == EntityType.BLAZE) {
-                event.getDrops().add(resonatingHit1());
-            } else {
+        Player killer = event.getEntity().getKiller();
+        if (killer != null) {
+            if (event.getEntity() instanceof Monster) {
+                event.getDrops().add(artifactHunter());
                 event.getDrops().add(blessingOfWisdom());
+                event.getDrops().add(reinforcement1());
+                if (event.getEntity().getType() == EntityType.CREEPER) {
+                    event.getDrops().add(antiGravThrow());
+                } else if (event.getEntity().getType() == EntityType.ENDERMAN) {
+                    event.getDrops().add(enderShot());
+                } else if (event.getEntity().getType() == EntityType.SPIDER || event.getEntity().getType() == EntityType.ZOMBIE || event.getEntity().getType() == EntityType.SKELETON) {
+                    event.getDrops().add(minersEyes1());
+                    if (event.getEntity().getType() == EntityType.SKELETON) {
+                        event.getDrops().add(phantomArrow());
+                    }
+                } else if (event.getEntity().getType() == EntityType.DROWNED || event.getEntity().getType() == EntityType.GUARDIAN || event.getEntity().getType() == EntityType.ELDER_GUARDIAN) {
+                    event.getDrops().add(oceansSting());
+                    if (event.getEntity().getType() == EntityType.DROWNED) {
+                        event.getDrops().add(minersEyes2());
+                    }
+                } else if (event.getEntity().getType() == EntityType.PILLAGER) {
+                    event.getDrops().add(phantomArrow1());
+                    event.getDrops().add(phantomStrike1());
+                    event.getDrops().add(precision1());
+                    event.getDrops().add(treeAntiHugger1());
+                } else if (event.getEntity().getType() == EntityType.WITHER_SKELETON) {
+                    event.getDrops().add(phantomStrike());
+                    event.getDrops().add(precision());
+                } else if (event.getEntity().getType() == EntityType.BLAZE) {
+                    event.getDrops().add(resonatingHit1());
+                } else {
+                    event.getDrops().add(blessingOfWisdom());
+                }
             }
-        }
-        if (event.getEntity().getType() == EntityType.WOLF) {
-            event.getDrops().add(packAlpha());
-        } else if (event.getEntity().getType() == EntityType.IRON_GOLEM) {
-            event.getDrops().add(reinforcement());
-        }
-        for (String s : WaterMob) {
-            if (event.getEntity().getName().toUpperCase().contains(s)) {
-                event.getDrops().add(littleFish2());
+            if (event.getEntity().getType() == EntityType.WOLF) {
+                event.getDrops().add(packAlpha());
+            } else if (event.getEntity().getType() == EntityType.IRON_GOLEM) {
+                event.getDrops().add(reinforcement());
+            }
+            for (String s : WaterMob) {
+                if (event.getEntity().getName().toUpperCase().contains(s)) {
+                    event.getDrops().add(littleFish2());
+                }
             }
         }
     }
@@ -747,8 +752,8 @@ public class Events implements Listener {
                 switch (level) {
                     case 1 -> radius = 1;
                     case 2 -> radius = 2;
-                    case 4 -> radius = 3;
-                    case 5 -> radius = 4;
+                    case 3 -> radius = 3;
+                    case 4 -> radius = 4;
                     default -> {
                         return;
                     }
@@ -985,7 +990,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onHit(EntityDamageByEntityEvent event) {
+    public void WildMagicStrike(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player player)) return;
         if (!(event.getEntity() instanceof LivingEntity target)) return;
         ItemStack weapon = player.getInventory().getItemInMainHand();
@@ -996,7 +1001,7 @@ public class Events implements Listener {
                 PersistentDataContainer data = meta.getPersistentDataContainer();
                 NamespacedKey key = new NamespacedKey("smartrunes", "wildmagicstrike");
                 int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                if(level > 0) {
+                if (level > 0) {
                     double incremento = getDouble("Runes.WildMagicStrike.effects.increase") * 0.01;
                     if (Math.random() <= incremento * level) {
                         PotionEffectType[] negativeEffects = {
@@ -1012,6 +1017,208 @@ public class Events implements Listener {
                         };
                         PotionEffectType randomEffect = negativeEffects[(int) (Math.random() * negativeEffects.length)];
                         target.addPotionEffect(new PotionEffect(randomEffect, 100, 1)); // 5 secondi, livello 2
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void TreeAntiHugger(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType() == Material.AIR || !item.hasItemMeta()) return;
+        List<String> validTypes = getList("Runes.TreeAntiHugger.applied-to");
+        for (String s : validTypes) {
+            if (item.getType().toString().contains(s)) {
+                ItemMeta meta = item.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "treeantihugger");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    List<String> logs = getList("Runes.TreeAntiHugger.effects.logs");
+                    List<Material> leaves = Arrays.asList(
+                            Material.OAK_LEAVES,
+                            Material.BIRCH_LEAVES,
+                            Material.SPRUCE_LEAVES,
+                            Material.JUNGLE_LEAVES,
+                            Material.ACACIA_LEAVES,
+                            Material.DARK_OAK_LEAVES,
+                            Material.MANGROVE_LEAVES,
+                            Material.CHERRY_LEAVES,
+                            Material.AZALEA_LEAVES,
+                            Material.FLOWERING_AZALEA_LEAVES,
+                            Material.WARPED_WART_BLOCK,
+                            Material.NETHER_WART_BLOCK,
+                            Material.SHROOMLIGHT,
+                            Material.RED_MUSHROOM_BLOCK,
+                            Material.BROWN_MUSHROOM_BLOCK
+                    );
+                    String baseType = block.getType().toString();
+                    if (logs.contains(baseType)) {
+                        int leafCount = 0;
+                        Location origin = block.getLocation();
+                        for (int x = -3; x <= 3; x++) {
+                            for (int y = -3; y <= 3; y++) {
+                                for (int z = -3; z <= 3; z++) {
+                                    Block b = origin.clone().add(x, y, z).getBlock();
+                                    if (leaves.contains(b.getType())) {
+                                        leafCount++;
+                                        if (leafCount >= 5) break;
+                                    }
+                                }
+                            }
+                        }
+                        if (leafCount < 5) return;
+                        Set<Block> visited = new HashSet<>();
+                        Queue<Block> queue = new LinkedList<>();
+                        queue.add(block);
+                        while (!queue.isEmpty()) {
+                            Block current = queue.poll();
+                            if (!visited.add(current)) continue;
+                            if (!current.getType().toString().equals(baseType)) continue;
+                            for (BlockFace face : BlockFace.values()) {
+                                Block relative = current.getRelative(face);
+                                if (!visited.contains(relative) && relative.getType().toString().equals(baseType)) {
+                                    queue.add(relative);
+                                }
+                            }
+                            current.breakNaturally(item);
+                            damageTool(item, player);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void ResonatingHit(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        List<String> validTypes = getList("Runes.ResonatingHit.applied-to");
+        if (tool.getType() == Material.AIR || !tool.hasItemMeta()) return;
+        for (String s : validTypes) {
+            if (tool.getType().toString().contains(s)) {
+                ItemMeta meta = tool.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "resonatinghit");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level <= 0) return;
+                List<Material> ores = Arrays.asList(
+                        Material.IRON_ORE, Material.GOLD_ORE, Material.COPPER_ORE,
+                        Material.DEEPSLATE_IRON_ORE, Material.DEEPSLATE_GOLD_ORE, Material.DEEPSLATE_COPPER_ORE,
+                        Material.NETHER_GOLD_ORE
+                );
+                if (!ores.contains(block.getType())) return;
+                double incremento = getInt("Runes.ResonatingHit.effects.increase") * 0.01;
+                if (Math.random() <= incremento * level) {
+                    event.setDropItems(false);
+                    Collection<ItemStack> drops = block.getDrops(tool);
+                    for (ItemStack drop : drops) {
+                        int amount = drop.getAmount();
+                        switch (drop.getType()) {
+                            case RAW_IRON -> {
+                                ItemStack iron = new ItemStack(Material.IRON_INGOT);
+                                iron.setAmount(amount);
+                                drop = iron;
+                            }
+                            case RAW_GOLD -> {
+                                ItemStack gold = new ItemStack(Material.GOLD_INGOT);
+                                gold.setAmount(amount);
+                                drop = gold;
+                            }
+                            case RAW_COPPER -> {
+                                ItemStack copper = new ItemStack(Material.COPPER_INGOT);
+                                copper.setAmount(amount);
+                                drop = copper;
+                            }
+                            case NETHER_GOLD_ORE -> {
+                                ItemStack nether = new ItemStack(Material.GOLD_INGOT);
+                                nether.setAmount(amount);
+                                drop = nether;
+                            }
+                        }
+                        block.getWorld().dropItemNaturally(block.getLocation(), drop);
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        UUID uuid = player.getUniqueId();
+        List<Wolf> wolves = playerWolves.getOrDefault(uuid, new ArrayList<>());
+        wolves.removeIf(w -> w.isDead() || !w.isValid());
+        ItemStack weapon = player.getInventory().getItemInMainHand();
+        List<String> validTypes = getList("Runes.PackAlpha.applied-to");
+        for (String s : validTypes) {
+            if (weapon.getType().toString().contains(s)) {
+                if (!weapon.hasItemMeta()) return;
+                ItemMeta meta = weapon.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "packalpha");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level <= 0) return;
+                if (wolves.size() >= level) return;
+                if (Math.random() <= 0.10) {
+                    long count = player.getWorld().getEntitiesByClass(Wolf.class).stream()
+                            .filter(w -> w.isTamed() && w.getOwner() != null && w.getOwner().getUniqueId().equals(player.getUniqueId()))
+                            .count();
+                    if (count >= level) return;
+                    Wolf wolf = (Wolf) player.getWorld().spawnEntity(player.getLocation(), EntityType.WOLF);
+                    double heal = getDouble("Runes.PackAlpha.effects.wolf-heal");
+                    Objects.requireNonNull(wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(heal);
+                    wolf.setHealth(heal);
+                    wolf.setTarget(target);
+                    wolves.add(wolf);
+                    playerWolves.put(uuid, wolves);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if (!wolf.isDead()) {
+                                wolf.remove();
+                                wolves.remove(wolf);
+                            }
+                        }
+                    }.runTaskLater(plugin, 20 * 30L);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void MasterHarvester(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        List<String> validTypes = getList("Runes.MasterHarvester.applied-to");
+        for (String s : validTypes) {
+            if (tool.getType().toString().contains(s)) {
+                if (tool.getType() == Material.AIR || !tool.hasItemMeta()) return;
+                ItemMeta meta = tool.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "masterharvester");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level <= 0) return;
+                Ageable ageable;
+                if (block.getBlockData() instanceof Ageable age) {
+                    ageable = age;
+                } else return;
+                if (ageable.getAge() != ageable.getMaximumAge()) return;
+                double incremento = getDouble("Runes.MasterHarvester.effects.increase") * 0.01;
+                double chance = level * incremento;
+                if (Math.random() < chance) {
+                    Collection<ItemStack> drops = block.getDrops(tool);
+                    for (ItemStack drop : drops) {
+                        ItemStack bonus = drop.clone();
+                        bonus.setAmount(drop.getAmount());
+                        block.getWorld().dropItemNaturally(block.getLocation(), bonus);
                     }
                 }
             }

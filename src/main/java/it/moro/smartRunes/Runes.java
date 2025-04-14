@@ -64,46 +64,46 @@ public class Runes {
             /*[26]*/{"Wild Magic Strike", "WildMagicStrike"} //Wild Magic Strike
     };
 
-    static ItemStack angler(){return head(runesParameters[0][1],getDouble("Runes.Angler.chance-drop"), 0);}
-    static ItemStack antiGravThrow(){return head(runesParameters[1][1],getDouble("Runes.AntiGravThrow.chance-drop"), 1);}
-    static ItemStack artifactHunter(){return head(runesParameters[2][1],getDouble("Runes.ArtifactHunter.chance-drop"), 2);}
-    static ItemStack baitMaster(){return head(runesParameters[3][1],getDouble("Runes.BaitMaster.chance-drop"), 3);}
-    static ItemStack blessingOfWisdom(){return head(runesParameters[4][1],getDouble("Runes.BlessingOfWisdom.chance-drop"), 4);}
-    static ItemStack divineHandiwork(){return head(runesParameters[5][1],getDouble("Runes.DivineHandiwork.chance-drop"), 5);}
-    static ItemStack enderShot(){return head(runesParameters[6][1],getDouble("Runes.EnderShot.chance-drop"), 6);}
-    static ItemStack expertExtraction(){return head(runesParameters[7][1],getDouble("Runes.ExpertExtraction.chance-drop"), 7);}
-    static ItemStack expertMining(){return head(runesParameters[8][1],getDouble("Runes.ExpertMining.chance-drop"), 8);}
-    static ItemStack farmlandManagement(){return head(runesParameters[9][1],getDouble("Runes.FarmlandManagement.chance-drop"), 9);}
-    static ItemStack greenThumb(){return head(runesParameters[10][1],getDouble("Runes.GreenThumb.chance-drop"), 10);}
-    static ItemStack littleFish(){return head(runesParameters[11][1],getDouble("Runes.LittleFish.chance-drop-fishing"), 11);}
-    static ItemStack littleFish2(){return head(runesParameters[11][1],getDouble("Runes.LittleFish.chance-drop-kill-water-mob"), 11);}
-    static ItemStack longCast(){return head(runesParameters[12][1],getDouble("Runes.LongCast.chance-drop"), 12);}
-    static ItemStack masterHarvester(){return head(runesParameters[13][1],getDouble("Runes.MasterHarvester.chance-drop"), 13);}
-    static ItemStack minersEyes(){return head(runesParameters[14][1],getDouble("Runes.MinersEyes.chance-drop-block"), 14);}
-    static ItemStack minersEyes1(){return head(runesParameters[14][1],getDouble("Runes.MinersEyes.chance-drop-mobs"), 14);}
-    static ItemStack minersEyes2(){return head(runesParameters[14][1],getDouble("Runes.MinersEyes.chance-drop-drowned"), 14);}
-    static ItemStack mobHunter(){return head(runesParameters[15][1],getDouble("Runes.MobHunter.chance-drop"), 15);}
-    static ItemStack oceansSting(){return head(runesParameters[16][1],getDouble("Runes.OceansSting.chance-drop"), 16);}
-    static ItemStack packAlpha(){return head(runesParameters[17][1],getDouble("Runes.PackAlpha.chance-drop"), 17);}
-    static ItemStack phantomArrow(){return head(runesParameters[18][1],getDouble("Runes.PhantomArrow.chance-drop-skeletons"), 18);}
-    static ItemStack phantomArrow1(){return head(runesParameters[18][1],getDouble("Runes.PhantomArrow.chance-drop-pillagers"), 18);}
-    static ItemStack phantomStrike(){return head(runesParameters[19][1],getDouble("Runes.PhantomStrike.chance-drop-skeletons"), 19);}
-    static ItemStack phantomStrike1(){return head(runesParameters[19][1],getDouble("Runes.PhantomStrike.chance-drop-pillagers"), 19);}
-    static ItemStack precision(){return head(runesParameters[20][1],getDouble("Runes.Precision.chance-drop-skeletons"), 20);}
-    static ItemStack precision1(){return head(runesParameters[20][1],getDouble("Runes.Precision.chance-drop-pillagers"), 20);}
-    static ItemStack reinforcement(){return head(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-golem"), 21);}
-    static ItemStack reinforcement1(){return head(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-mob"), 21);}
-    static ItemStack reinforcement2(){return head(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-tree"), 21);}
-    static ItemStack reinforcement3(){return head(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-ores"), 21);}
-    static ItemStack resonatingHit(){return head(runesParameters[22][1],getDouble("Runes.ResonatingHit.chance-drop-ores"), 22);}
-    static ItemStack resonatingHit1(){return head(runesParameters[22][1],getDouble("Runes.ResonatingHit.chance-drop-blaze"), 22);}
-    static ItemStack saltOfTheSea(){return head(runesParameters[23][1],getDouble("Runes.SaltOfTheSea.chance-drop"), 23);}
-    static ItemStack smoothTalker(){return head(runesParameters[24][1],getDouble("Runes.SmoothTalker.chance-drop"), 24);}
-    static ItemStack treeAntiHugger(){return head(runesParameters[25][1],getDouble("Runes.TreeAntiHugger.chance-drop-tree"), 25);}
-    static ItemStack treeAntiHugger1(){return head(runesParameters[25][1],getDouble("Runes.TreeAntiHugger.chance-drop-pillagers"), 25);}
-    static ItemStack wildMagicStrike(){return head(runesParameters[26][1],getDouble("Runes.WildMagicStrike.chance-drop"), 26);}
+    static ItemStack angler(){return rune(runesParameters[0][1],getDouble("Runes.Angler.chance-drop"), 0, -1);}
+    static ItemStack antiGravThrow(){return rune(runesParameters[1][1],getDouble("Runes.AntiGravThrow.chance-drop"), 1, -1);}
+    static ItemStack artifactHunter(){return rune(runesParameters[2][1],getDouble("Runes.ArtifactHunter.chance-drop"), 2, -1);}
+    static ItemStack baitMaster(){return rune(runesParameters[3][1],getDouble("Runes.BaitMaster.chance-drop"), 3, -1);}
+    static ItemStack blessingOfWisdom(){return rune(runesParameters[4][1],getDouble("Runes.BlessingOfWisdom.chance-drop"), 4, -1);}
+    static ItemStack divineHandiwork(){return rune(runesParameters[5][1],getDouble("Runes.DivineHandiwork.chance-drop"), 5, -1);}
+    static ItemStack enderShot(){return rune(runesParameters[6][1],getDouble("Runes.EnderShot.chance-drop"), 6, -1);}
+    static ItemStack expertExtraction(){return rune(runesParameters[7][1],getDouble("Runes.ExpertExtraction.chance-drop"), 7, -1);}
+    static ItemStack expertMining(){return rune(runesParameters[8][1],getDouble("Runes.ExpertMining.chance-drop"), 8, -1);}
+    static ItemStack farmlandManagement(){return rune(runesParameters[9][1],getDouble("Runes.FarmlandManagement.chance-drop"), 9, -1);}
+    static ItemStack greenThumb(){return rune(runesParameters[10][1],getDouble("Runes.GreenThumb.chance-drop"), 10, -1);}
+    static ItemStack littleFish(){return rune(runesParameters[11][1],getDouble("Runes.LittleFish.chance-drop-fishing"), 11, -1);}
+    static ItemStack littleFish2(){return rune(runesParameters[11][1],getDouble("Runes.LittleFish.chance-drop-kill-water-mob"), 11, -1);}
+    static ItemStack longCast(){return rune(runesParameters[12][1],getDouble("Runes.LongCast.chance-drop"), 12, -1);}
+    static ItemStack masterHarvester(){return rune(runesParameters[13][1],getDouble("Runes.MasterHarvester.chance-drop"), 13, -1);}
+    static ItemStack minersEyes(){return rune(runesParameters[14][1],getDouble("Runes.MinersEyes.chance-drop-block"), 14, -1);}
+    static ItemStack minersEyes1(){return rune(runesParameters[14][1],getDouble("Runes.MinersEyes.chance-drop-mobs"), 14, -1);}
+    static ItemStack minersEyes2(){return rune(runesParameters[14][1],getDouble("Runes.MinersEyes.chance-drop-drowned"), 14, -1);}
+    static ItemStack mobHunter(){return rune(runesParameters[15][1],getDouble("Runes.MobHunter.chance-drop"), 15, -1);}
+    static ItemStack oceansSting(){return rune(runesParameters[16][1],getDouble("Runes.OceansSting.chance-drop"), 16, -1);}
+    static ItemStack packAlpha(){return rune(runesParameters[17][1],getDouble("Runes.PackAlpha.chance-drop"), 17, -1);}
+    static ItemStack phantomArrow(){return rune(runesParameters[18][1],getDouble("Runes.PhantomArrow.chance-drop-skeletons"), 18, -1);}
+    static ItemStack phantomArrow1(){return rune(runesParameters[18][1],getDouble("Runes.PhantomArrow.chance-drop-pillagers"), 18, -1);}
+    static ItemStack phantomStrike(){return rune(runesParameters[19][1],getDouble("Runes.PhantomStrike.chance-drop-skeletons"), 19, -1);}
+    static ItemStack phantomStrike1(){return rune(runesParameters[19][1],getDouble("Runes.PhantomStrike.chance-drop-pillagers"), 19, -1);}
+    static ItemStack precision(){return rune(runesParameters[20][1],getDouble("Runes.Precision.chance-drop-skeletons"), 20, -1);}
+    static ItemStack precision1(){return rune(runesParameters[20][1],getDouble("Runes.Precision.chance-drop-pillagers"), 20, -1);}
+    static ItemStack reinforcement(){return rune(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-golem"), 21, -1);}
+    static ItemStack reinforcement1(){return rune(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-mob"), 21, -1);}
+    static ItemStack reinforcement2(){return rune(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-tree"), 21, -1);}
+    static ItemStack reinforcement3(){return rune(runesParameters[21][1],getDouble("Runes.Reinforcement.chance-drop-ores"), 21, -1);}
+    static ItemStack resonatingHit(){return rune(runesParameters[22][1],getDouble("Runes.ResonatingHit.chance-drop-ores"), 22, -1);}
+    static ItemStack resonatingHit1(){return rune(runesParameters[22][1],getDouble("Runes.ResonatingHit.chance-drop-blaze"), 22, -1);}
+    static ItemStack saltOfTheSea(){return rune(runesParameters[23][1],getDouble("Runes.SaltOfTheSea.chance-drop"), 23, -1);}
+    static ItemStack smoothTalker(){return rune(runesParameters[24][1],getDouble("Runes.SmoothTalker.chance-drop"), 24, -1);}
+    static ItemStack treeAntiHugger(){return rune(runesParameters[25][1],getDouble("Runes.TreeAntiHugger.chance-drop-tree"), 25, -1);}
+    static ItemStack treeAntiHugger1(){return rune(runesParameters[25][1],getDouble("Runes.TreeAntiHugger.chance-drop-pillagers"), 25, -1);}
+    static ItemStack wildMagicStrike(){return rune(runesParameters[26][1],getDouble("Runes.WildMagicStrike.chance-drop"), 26, -1);}
 
-    static public ItemStack head(String id, Double probability, int indice) {
+    static public ItemStack rune(String id, Double probability, int indice, int lvl) {
         if (checkSuccess(probability)) {
             String materialName = getString("Runes." + id + ".material");
             if(materialName != null) {
@@ -112,7 +112,12 @@ public class Runes {
                     ItemStack head = new ItemStack(mat);
                     ItemMeta meta = head.getItemMeta();
                     PersistentDataContainer data = meta.getPersistentDataContainer();
-                    int level = randomValue(getDouble("Runes." + id + ".effects.max-level"));
+                    int level;
+                    if(lvl == -1){
+                        level = randomValue(getDouble("Runes." + id + ".effects.max-level"));
+                    } else {
+                        level = lvl;
+                    }
                     for (String[] runesParameter : runesParameters) {
                         NamespacedKey key = new NamespacedKey("smartrunes", runesParameter[1].toLowerCase());
                         if (runesParameter[1].equalsIgnoreCase(runesParameters[indice][1])) {
@@ -202,7 +207,5 @@ public class Runes {
             return false;
         }
     }
-
-
 
 }

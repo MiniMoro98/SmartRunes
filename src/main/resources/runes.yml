@@ -109,7 +109,7 @@ Runes:
     material: WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %
     effects:
-      max-level: 5
+      max-level: 4
     applied-to:
       - _HOE
 
@@ -143,7 +143,6 @@ Runes:
     applied-to:
       - FISHING_ROD
 
-  # DA IMPLEMENTARE
   MasterHarvester: #0.02 %
     text: "Master Harvester"
     material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -186,12 +185,12 @@ Runes:
     applied-to:
       - _SWORD
 
-  # DA IMPLEMENTARE
   PackAlpha:
     text: "Pack Alpha"
     material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
+      wolf-heal: 40
       increase: 1
       max-level: 3
     applied-to:
@@ -222,7 +221,7 @@ Runes:
       - _AXE
       - MACE
 
-  # DA IMPLEMENTARE
+  # TO BE IMPLEMENTED
   Precision:
     text: "Precision"
     material: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -251,7 +250,6 @@ Runes:
       - _HELMET
       - _LEGGINGS
 
-  # DA IMPLEMENTARE
   ResonatingHit:
     text: "Resonating Hit"
     material: SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -273,7 +271,7 @@ Runes:
     applied-to:
       - FISHING_ROD
 
-  # DA IMPLEMENTARE
+  # TO BE IMPLEMENTED
   SmoothTalker:
     text: "Smooth Talker"
     material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -284,7 +282,6 @@ Runes:
     applied-to:
       - GOLDEN_CHESTPLATE
 
-  # DA IMPLEMENTARE
   TreeAntiHugger:
     text: "Tree Anti-Hugger"
     material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
@@ -293,6 +290,21 @@ Runes:
     effects:
       increase: 1
       max-level: 2
+      logs:
+        - OAK_LOG
+        - BIRCH_LOG
+        - SPRUCE_LOG
+        - JUNGLE_LOG
+        - ACACIA_LOG
+        - DARK_OAK_LOG
+        - MANGROVE_LOG
+        - MANGROVE_ROOTS
+        - CHERRY_LOG
+        - CRIMSON_STEM
+        - WARPED_STEM
+        - MUSHROOM_STEM
+        - RED_MUSHROOM_BLOCK
+        - BROWN_MUSHROOM_BLOCK
     applied-to:
       - _AXE
 
