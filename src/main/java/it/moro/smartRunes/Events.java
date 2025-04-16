@@ -49,8 +49,6 @@ public class Events implements Listener {
             "GOLD_ORE", "DEEPSLATE_GOLD_ORE", "REDSTONE_ORE", "DEEPSLATE_REDSTONE_ORE", "LAPIS_ORE", "DEEPSLATE_LAPIS_ORE",
             "EMERALD_ORE", "DEEPSLATE_EMERALD_ORE", "DIAMOND_ORE", "DEEPSLATE_DIAMOND_ORE", "NETHER_GOLD_ORE", "ANCIENT_DEBRIS"};
 
-    String[] WaterMob = {"AXOLOTL", "COD", "DOLPHIN", "GLOW_SQUID", "GUARDIAN", "ELDER_GUARDIAN", "PUFFERFISH", "SALMON", "SQUID", "TROPICAL_FISH", "TURTLE"};
-
     //--------------------------------------- RUNES APPLICATION --------------------------------------------------
 
     @EventHandler
@@ -142,7 +140,7 @@ public class Events implements Listener {
             }
             boolean ritorno = false;
             for (int s = 0; s < runesParameters.length; s++) {
-                Double maxLevel = getDouble("Runes." + runesParameters[s][1] + ".effects.max-level");
+                double maxLevel = getDouble("Runes." + runesParameters[s][1] + ".effects.max-level");
                 int attuale = livelli[s];
                 int nuovo = runeLvl[s];
                 if (nuovo > 0) {
@@ -262,6 +260,7 @@ public class Events implements Listener {
             } else if (event.getEntity().getType() == EntityType.IRON_GOLEM) {
                 event.getDrops().add(reinforcement());
             }
+            List<String> WaterMob = getList("Runes.LittleFish.water-mobs");
             for (String s : WaterMob) {
                 if (event.getEntity().getName().toUpperCase().contains(s)) {
                     event.getDrops().add(littleFish2());
@@ -407,7 +406,6 @@ public class Events implements Listener {
             }
         }
     } // BaitMaster, SaltOfTheSea, Angler, BaitMaster, LongCast
-
     public static Double increase(double percentuale, double livello, double numero) {
         double probability = percentuale * livello;
         double incremento = numero * (probability / 100);
@@ -415,27 +413,70 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void BlessingOfWisdom(EntityDeathEvent event) {
+    public void onEntityDeath(EntityDeathEvent event) {
         Player player = event.getEntity().getKiller();
-        if (player != null) {
-            ItemStack utensile = player.getInventory().getItemInMainHand();
-            List<String> lista = getList("Runes.ArtifactHunter.applied-to");
-            for (String s : lista) {
-                if (utensile.getType().toString().contains(s)) {
-                    if (utensile.hasItemMeta()) {
-                        List<String> lista1 = getList("Runes.BlessingOfWisdom.applied-to");
-                        for (String s1 : lista1) {
-                            if (utensile.getType().toString().contains(s1)) {
-                                ItemMeta meta = utensile.getItemMeta();
-                                PersistentDataContainer data = meta.getPersistentDataContainer();
-                                NamespacedKey key = new NamespacedKey("smartrunes", "blessingofwisdom");
-                                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                                if (level > 0) {
-                                    double incremento = getDouble("Runes.BlessingOfWisdom.effects.increase");
-                                    double exp = event.getDroppedExp();
-                                    exp = increase(incremento, level, exp);
-                                    event.setDroppedExp((int) Math.round(exp));
+        if (player == null) return;
+
+        handleArtifactHunter(player, event);
+        handleMobHunter(event);
+    }
+    private void handleArtifactHunter(Player player, EntityDeathEvent event) {
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        List<String> lista = getList("Runes.ArtifactHunter.applied-to");
+        for (String s : lista) {
+            if (mainHand.getType().toString().contains(s)) {
+                if (mainHand.hasItemMeta()) {
+                    ItemMeta meta = mainHand.getItemMeta();
+                    PersistentDataContainer data = meta.getPersistentDataContainer();
+                    NamespacedKey artifactHunterKey = new NamespacedKey("smartrunes", "artifacthunter");
+                    int artifactHunterLevel = data.getOrDefault(artifactHunterKey, PersistentDataType.INTEGER, 0);
+                    if (artifactHunterLevel > 0) {
+                        double probability = getDouble("Runes.ArtifactHunter.effects.probability");
+                        if (checkSuccess(probability)) {
+                            ItemStack[] items = {angler(), antiGravThrow(), artifactHunter(), baitMaster(), blessingOfWisdom(), farmlandManagement(), divineHandiwork(),
+                                    enderShot(), expertExtraction(), expertMining(), farmlandManagement(), greenThumb(), littleFish(), longCast(), masterHarvester(),
+                                    minersEyes(), mobHunter(), oceansSting(), packAlpha(), phantomArrow(), phantomStrike(), precision(), reinforcement(), resonatingHit(),
+                                    saltOfTheSea(), smoothTalker(), treeAntiHugger(), wildMagicStrike()};
+                            for (ItemStack item : items) {
+                                if (getBoolConfig("DEBUG")) {
+                                    player.sendMessage("§a[SmartRunes] You have received a rune!");
                                 }
+                                event.getDrops().add(item);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void handleMobHunter(EntityDeathEvent event) {
+        if (!(event.getEntity().getLastDamageCause() instanceof EntityDamageByEntityEvent damageEvent)) return;
+        ItemStack weapon = null;
+        Player giocatore = null;
+        if (damageEvent.getDamager() instanceof Player player) {
+            weapon = player.getInventory().getItemInMainHand();
+            giocatore = player;
+        } else if (damageEvent.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player player) {
+            weapon = player.getInventory().getItemInMainHand();
+            giocatore = player;
+        }
+        if (weapon == null || !weapon.hasItemMeta()) return;
+        List<String> lista = getList("Runes.MobHunter.applied-to");
+        for (String s : lista) {
+            if (weapon.getType().toString().contains(s)) {
+                ItemMeta meta = weapon.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey mobHunterKey = new NamespacedKey("smartrunes", "mobhunter");
+                int mobHunterLevel = data.getOrDefault(mobHunterKey, PersistentDataType.INTEGER, 0);
+                if (mobHunterLevel > 0) {
+                    int chance = getInt("Runes.MobHunter.effects.chance-drop-egg");
+                    if (checkSuccess(chance)) {
+                        Material eggMaterial = Material.getMaterial(event.getEntity().getType().name() + "_SPAWN_EGG");
+                        if (eggMaterial != null) {
+                            ItemStack spawnEgg = new ItemStack(eggMaterial);
+                            event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), spawnEgg);
+                            if (getBoolConfig("DEBUG")) {
+                                giocatore.sendMessage("§a[SmartRunes] You received an egg of " + event.getEntity().getType().name());
                             }
                         }
                     }
@@ -445,93 +486,46 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void ArtifactHunter(EntityDeathEvent event) {
-        Player player = event.getEntity().getKiller();
-        if (player != null) {
-            ItemStack[] armor = {player.getInventory().getHelmet(), player.getInventory().getChestplate(),
-                    player.getInventory().getLeggings(), player.getInventory().getBoots()};
-            boolean ritorno = false;
-            for (ItemStack pezzo : armor) {
-                if (pezzo == null) {
-                    return;
-                }
-                if (pezzo.hasItemMeta()) {
-                    ItemMeta meta = pezzo.getItemMeta();
-                    PersistentDataContainer data = meta.getPersistentDataContainer();
-                    NamespacedKey key = new NamespacedKey("smartrunes", "artifacthunter");
-                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                    if (level == 0) {
-                        ritorno = true;
-                    }
-                } else {
-                    ritorno = true;
-                }
-            }
-            if (ritorno) {
-                return;
-            }
-            ItemStack[] items = {angler(), antiGravThrow(), artifactHunter(), baitMaster(), blessingOfWisdom(), farmlandManagement(), divineHandiwork(),
-                    enderShot(), expertExtraction(), expertMining(), farmlandManagement(), greenThumb(), littleFish(), longCast(), masterHarvester(),
-                    minersEyes(), mobHunter(), oceansSting(), packAlpha(), phantomArrow(), phantomStrike(), precision(), reinforcement(), resonatingHit(),
-                    saltOfTheSea(), smoothTalker(), treeAntiHugger(), wildMagicStrike()
-            };
-            double probability = getDouble("Runes.ArtifactHunter.effects.probability");
-            for (ItemStack item : items) {
-                if (checkSuccess(probability)) {
-                    event.getDrops().add(item);
-                }
-            }
-        }
+    public void BlessingOfWisdomBlock(BlockBreakEvent event) {
+        BlessingOfWisdom(event.getPlayer(), event.getExpToDrop(), event.getPlayer().getInventory().getItemInMainHand(), newExp -> event.setExpToDrop((int) Math.round(newExp)));
     }
-
     @EventHandler
-    public void MobHunter(EntityDeathEvent event) {
-        Entity entity = event.getEntity();
-        Player killer = event.getEntity().getKiller();
-        if (killer == null) return;
-        ItemStack arma = killer.getInventory().getItemInMainHand();
-        if (!arma.hasItemMeta()) {
-            return;
+    public void BlessingOfWisdomMob(EntityDeathEvent event) {
+        if (!(event.getEntity().getLastDamageCause() instanceof EntityDamageByEntityEvent damageEvent)) return;
+        Player player = null;
+        ItemStack weapon = null;
+        if (damageEvent.getDamager() instanceof Player p) {
+            player = p;
+            weapon = p.getInventory().getItemInMainHand();
+        } else if (damageEvent.getDamager() instanceof Projectile projectile) {
+            if (projectile.getShooter() instanceof Player p) {
+                player = p;
+                if (projectile instanceof Arrow || projectile instanceof Trident) {
+                    weapon = p.getInventory().getItemInMainHand();
+                }
+            }
         }
-        List<String> lista = getList("Runes.MobHunter.applied-to");
+        if (player == null || weapon == null) return;
+        BlessingOfWisdom(player, event.getDroppedExp(), weapon, newExp -> event.setDroppedExp((int) Math.round(newExp)));
+    }
+    private void BlessingOfWisdom(Player player, double originalExp, ItemStack utensile, java.util.function.DoubleConsumer expSetter) {
+        if (!utensile.hasItemMeta()) return;
+        List<String> lista = getList("Runes.BlessingOfWisdom.applied-to");
+        String type = utensile.getType().toString().toUpperCase();
         for (String s : lista) {
-            if (arma.getType().toString().contains(s)) {
-                ItemMeta meta = arma.getItemMeta();
+            if (type.contains(s.toUpperCase())) {
+                ItemMeta meta = utensile.getItemMeta();
                 PersistentDataContainer data = meta.getPersistentDataContainer();
-                NamespacedKey key = new NamespacedKey("smartrunes", "mobhunter");
+                NamespacedKey key = new NamespacedKey("smartrunes", "blessingofwisdom");
                 int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
                 if (level > 0) {
-                    int chance = getInt("Runes.MobHunter.effects.chance-drop-egg");
-                    if (checkSuccess(chance)) {
-                        Material eggMaterial = Material.getMaterial(entity.getType().name() + "_SPAWN_EGG");
-                        if (eggMaterial != null) {
-                            ItemStack spawnEgg = new ItemStack(eggMaterial);
-                            entity.getWorld().dropItemNaturally(entity.getLocation(), spawnEgg);
-                        }
+                    double incremento = getDouble("Runes.BlessingOfWisdom.effects.increase");
+                    double exp = increase(incremento, level, originalExp);
+                    expSetter.accept(exp);
+                    if (getBoolConfig("DEBUG")) {
+                        player.sendMessage("§a[SmartRunes] Gained " + originalExp + " + " + String.format("%.1f", (exp - originalExp)) + " XP");
                     }
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void BlessingOfWisdom(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        ItemStack utensile = player.getInventory().getItemInMainHand();
-        if (utensile.hasItemMeta()) {
-            List<String> lista = getList("Runes.BlessingOfWisdom.applied-to");
-            for (String s : lista) {
-                if (utensile.getType().toString().contains(s)) {
-                    ItemMeta meta = utensile.getItemMeta();
-                    PersistentDataContainer data = meta.getPersistentDataContainer();
-                    NamespacedKey key = new NamespacedKey("smartrunes", "blessingofwisdom");
-                    int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                    if (level > 0) {
-                        double incremento = getDouble("Runes.BlessingOfWisdom.effects.increase");
-                        double exp = event.getExpToDrop();
-                        exp = increase(incremento, level, exp);
-                        event.setExpToDrop((int) Math.round(exp));
-                    }
+                    break;
                 }
             }
         }
@@ -563,7 +557,6 @@ public class Events implements Listener {
             }
         }
     }
-
     private boolean isSupportedOre(Material type) {
         return switch (type) {
             case COAL_ORE, IRON_ORE, COPPER_ORE, GOLD_ORE,
@@ -574,7 +567,6 @@ public class Events implements Listener {
             default -> false;
         };
     }
-
     private Set<Block> getConnectedOres(Block start) {
         Set<Block> result = new HashSet<>();
         Queue<Block> toCheck = new LinkedList<>();
@@ -595,7 +587,6 @@ public class Events implements Listener {
         }
         return result;
     }
-
     private void damageTool(ItemStack tool, Player player) {
         if (tool == null || tool.getType() == Material.AIR) return;
         ItemMeta meta = tool.getItemMeta();
@@ -636,7 +627,6 @@ public class Events implements Listener {
             }
         }
     }
-
     private boolean isPlantTable(Material material) {
         return material == Material.WHEAT ||
                 material == Material.CARROTS ||
@@ -646,7 +636,6 @@ public class Events implements Listener {
                 material == Material.NETHER_WART ||
                 material == Material.PITCHER_CROP;
     }
-
     private boolean isAdjacentToStem(Block block, Material stemType) {
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
@@ -704,24 +693,29 @@ public class Events implements Listener {
 
     @EventHandler
     public void AntiGravThrow(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player player)) return;
+        Player player = null;
+        if (event.getDamager() instanceof Player p) {
+            player = p;
+        } else if (event.getDamager() instanceof Projectile projectile) {
+            if (projectile.getShooter() instanceof Player p) {
+                player = p;
+            }
+        }
+        if (player == null) return;
         if (!(event.getEntity() instanceof LivingEntity target)) return;
         ItemStack utensile = player.getInventory().getItemInMainHand();
         if (!utensile.hasItemMeta()) return;
         List<String> lista = getList("Runes.AntiGravThrow.applied-to");
-        for (String s : lista) {
-            if (utensile.getType().toString().contains(s)) {
-                ItemMeta meta = utensile.getItemMeta();
-                PersistentDataContainer data = meta.getPersistentDataContainer();
-                NamespacedKey key = new NamespacedKey("smartrunes", "antigravthrow");
-                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                if (level > 0) {
-                    double blocchi = getDouble("Runes.AntiGravThrow.effects.increase") * level + 2;
-                    double yVelocity = Math.sqrt(2 * 0.08 * blocchi);
-                    Vector dir = new Vector(0, yVelocity, 0);
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> target.setVelocity(dir), 1L);
-                }
-            }
+        if (!lista.contains(utensile.getType().toString())) return;
+        ItemMeta meta = utensile.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        NamespacedKey key = new NamespacedKey("smartrunes", "antigravthrow");
+        int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+        if (level > 0) {
+            double blocchi = getDouble("Runes.AntiGravThrow.effects.increase") * level + 2;
+            double yVelocity = Math.sqrt(2 * 0.08 * blocchi);
+            Vector dir = new Vector(0, yVelocity, 0);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> target.setVelocity(dir), 1L);
         }
     }
 
@@ -855,7 +849,6 @@ public class Events implements Listener {
             }
         }
     }
-
     private Material getSeedFromCrop(Material crop) {
         return switch (crop) {
             case WHEAT -> Material.WHEAT_SEEDS;
@@ -923,10 +916,9 @@ public class Events implements Listener {
                     int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
                     if (level > 0) {
                         EntityType type = target.getType();
-                        EntityType[] mobs = new EntityType[]{EntityType.ENDERMAN, EntityType.BLAZE, EntityType.MAGMA_CUBE,
-                                EntityType.STRIDER, EntityType.WITHER_SKELETON, EntityType.HUSK, EntityType.WITHER};
-                        for (EntityType mob : mobs) {
-                            if (type == mob) {
+                        List<String> mobs = getList("Runes.OceansSting.effects.mobs");
+                        for (String mob : mobs) {
+                            if (type.name().equalsIgnoreCase(mob)) {
                                 double danno = event.getDamage();
                                 double extraDamage = increase(getInt("Runes.OceansSting.applied-to"), level, danno);
                                 event.setDamage(extraDamage);
@@ -1090,7 +1082,7 @@ public class Events implements Listener {
                                 }
                             }
                             current.breakNaturally(item);
-                            if(level == 1){
+                            if (level == 1) {
                                 damageTool(item, player);
                             } else {
                                 if (count % 2 != 0) {
@@ -1161,7 +1153,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+    public void PackAlpha(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player player)) return;
         if (!(event.getEntity() instanceof LivingEntity target)) return;
         UUID uuid = player.getUniqueId();
@@ -1190,6 +1182,7 @@ public class Events implements Listener {
                     wolf.setTarget(target);
                     wolves.add(wolf);
                     playerWolves.put(uuid, wolves);
+                    long delay = getLong("Runes.PackAlpha.effects.wolf-time");
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -1198,11 +1191,12 @@ public class Events implements Listener {
                                 wolves.remove(wolf);
                             }
                         }
-                    }.runTaskLater(plugin, 20 * 30L);
+                    }.runTaskLater(plugin, 20 * delay);
                 }
             }
         }
     }
+
 
     @EventHandler
     public void MasterHarvester(BlockBreakEvent event) {
@@ -1241,7 +1235,7 @@ public class Events implements Listener {
     public void ThoroughInspection1(BlockBreakEvent event) {
         Block block = event.getBlock();
         ItemStack type = event.getPlayer().getInventory().getHelmet();
-        if(type != null && type.hasItemMeta()) {
+        if (type != null && type.hasItemMeta()) {
             ItemMeta meta = type.getItemMeta();
             PersistentDataContainer data = meta.getPersistentDataContainer();
             NamespacedKey key = new NamespacedKey("smartrunes", "thoroughinspection");

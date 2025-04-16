@@ -18,6 +18,11 @@ Runes:
       max-level: 3
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   ArtifactHunter:
     text: "Artifact Hunter"
@@ -50,9 +55,13 @@ Runes:
       increase: 2
       max-level: 5
     applied-to:
-      - _PICKAXE
       - _SWORD
       - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
+      - _PICKAXE
       - _SHOVEL
       - _HOE
 
@@ -63,14 +72,18 @@ Runes:
     effects:
       max-level: 1
     applied-to:
-      - _PICKAXE
       - _SWORD
       - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
+      - _PICKAXE
       - _SHOVEL
       - _HOE
-      - _CHESTPLATE
-      - _BOOTS
       - _HELMET
+      - _BOOTS
+      - _CHESTPLATE
       - _LEGGINGS
       - FISHING_ROD
 
@@ -127,6 +140,18 @@ Runes:
     material: SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-fishing: 0.4 #0.4
     chance-drop-kill-water-mob: 0.08 #0.08 %
+    water-mobs:
+      - AXOLOTL
+      - COD
+      - DOLPHIN
+      - GLOW_SQUID
+      - GUARDIAN
+      - ELDER_GUARDIAN
+      - PUFFERFISH
+      - SALMON
+      - SQUID
+      - TROPICAL_FISH
+      - TURTLE
     effects:
       max-level: 1
     applied-to:
@@ -174,6 +199,11 @@ Runes:
       max-level: 1
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   OceansSting:
     text: "Ocean's Sting"
@@ -182,19 +212,38 @@ Runes:
     effects:
       increase: 2
       max-level: 5
+      mobs:
+        - ENDERMAN
+        - BLAZE
+        - MAGMA_CUBE
+        - STRIDER
+        - WITHER_SKELETON
+        - HUSK
+        - WITHER
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   PackAlpha:
     text: "Pack Alpha"
     material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
-      wolf-heal: 40
+      wolf-heal: 40 #life of the wolf
+      wolf-time: 30 #seconds to despawn
       increase: 1
       max-level: 3
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   PhantomArrow:
     text: "Phantom Arrow"

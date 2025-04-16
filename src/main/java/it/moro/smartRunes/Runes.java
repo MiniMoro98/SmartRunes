@@ -162,12 +162,21 @@ public class Runes {
         }
     }
 
-    static public Double getDouble(String value) {
+    static public double getDouble(String value) {
         if (dataRunes.contains(value))
             return dataRunes.getDouble(value);
         else {
             plugin.getLogger().info("Error: The key '" + value + "' was not found in the configuration file runes.yml");
             return 0.0;
+        }
+    }
+
+    static public long getLong(String value) {
+        if (dataRunes.contains(value))
+            return dataRunes.getLong(value);
+        else {
+            plugin.getLogger().info("Error: The key '" + value + "' was not found in the configuration file runes.yml");
+            return 0;
         }
     }
 
@@ -199,7 +208,7 @@ public class Runes {
         }
     }
 
-    static public Boolean getBoolConfig(String value){
+    static public boolean getBoolConfig(String value){
         if(dataConfig.contains(value)){
             return dataConfig.getBoolean(value);
         } else {
