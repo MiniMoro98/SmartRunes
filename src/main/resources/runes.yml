@@ -272,15 +272,16 @@ Runes:
       - FISHING_ROD
 
   # TO BE IMPLEMENTED
-  SmoothTalker:
-    text: "Smooth Talker"
+  ThoroughInspection:
+    text: "Thorough Inspection"
     material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.08 #0.08 %
     effects:
-      increase: 2
+      money: 1000
+      increase: 1
       max-level: 5
     applied-to:
-      - GOLDEN_CHESTPLATE
+      - _HELMET
 
   TreeAntiHugger:
     text: "Tree Anti-Hugger"

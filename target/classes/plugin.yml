@@ -1,9 +1,22 @@
 name: SmartRunes
-version: 0.0.3
+version: 0.0.4
 main: it.moro.smartRunes.SmartRunes
 api-version: '1.20'
+softdepend:
+  - Vault
 
 commands:
   runes:
     description: generic command.
     usage: /runes
+
+permissions:
+  smartrunes.give:
+    description: Give rune
+    default: op
+  smartrunes.reload:
+    description: Reload configuration
+    default: op
+  smartrunes.info:
+    description: View rune information
+    default: op

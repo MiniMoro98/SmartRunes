@@ -1,6 +1,8 @@
 package it.moro.smartRunes;
 
 import lombok.Getter;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -10,6 +12,7 @@ public final class SmartRunes extends JavaPlugin {
 
     @Getter
     private static SmartRunes instance;
+    public static Economy eco;
 
     @Override
     public void onEnable() {
@@ -19,12 +22,25 @@ public final class SmartRunes extends JavaPlugin {
         getServer().getPluginManager().registerEvents(events, this);
         new Runes(this);
         Objects.requireNonNull(getCommand("runes")).setExecutor(new Commands(this));
+        setupEconomy();
         getLogger().info("\u001B[32mEnabled!\u001B[0m");
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Disabled!");
+    }
+
+    public void setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return;
+        }
+
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return;
+        }
+        eco = rsp.getProvider();
     }
 
     private void loadFiles() {

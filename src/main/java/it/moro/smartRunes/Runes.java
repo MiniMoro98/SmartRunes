@@ -59,7 +59,7 @@ public class Runes {
             /*[21]*/{"Reinforcement", "Reinforcement"}, //Reinforcement
             /*[22]*/{"Resonating Hit", "ResonatingHit"}, //Resonating Hit
             /*[23]*/{"Salt of the Sea", "SaltOfTheSea"}, //Salt of the Sea
-            /*[24]*/{"Smooth Talker", "SmoothTalker"}, //Smooth Talker
+            /*[24]*/{"Thorough Inspection", "ThoroughInspection"}, //Thorough Inspection
             /*[25]*/{"Tree Anti-hugger", "TreeAntiHugger"}, //Tree Anti-hugger
             /*[26]*/{"Wild Magic Strike", "WildMagicStrike"} //Wild Magic Strike
     };
@@ -98,7 +98,7 @@ public class Runes {
     static ItemStack resonatingHit(){return rune(runesParameters[22][1],getDouble("Runes.ResonatingHit.chance-drop-ores"), 22, -1);}
     static ItemStack resonatingHit1(){return rune(runesParameters[22][1],getDouble("Runes.ResonatingHit.chance-drop-blaze"), 22, -1);}
     static ItemStack saltOfTheSea(){return rune(runesParameters[23][1],getDouble("Runes.SaltOfTheSea.chance-drop"), 23, -1);}
-    static ItemStack smoothTalker(){return rune(runesParameters[24][1],getDouble("Runes.SmoothTalker.chance-drop"), 24, -1);}
+    static ItemStack smoothTalker(){return rune(runesParameters[24][1],getDouble("Runes.ThoroughInspection.chance-drop"), 24, -1);}
     static ItemStack treeAntiHugger(){return rune(runesParameters[25][1],getDouble("Runes.TreeAntiHugger.chance-drop-tree"), 25, -1);}
     static ItemStack treeAntiHugger1(){return rune(runesParameters[25][1],getDouble("Runes.TreeAntiHugger.chance-drop-pillagers"), 25, -1);}
     static ItemStack wildMagicStrike(){return rune(runesParameters[26][1],getDouble("Runes.WildMagicStrike.chance-drop"), 26, -1);}

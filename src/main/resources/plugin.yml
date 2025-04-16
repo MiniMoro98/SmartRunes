@@ -2,8 +2,21 @@ name: SmartRunes
 version: ${project.version}
 main: it.moro.smartRunes.SmartRunes
 api-version: '1.20'
+softdepend:
+  - Vault
 
 commands:
   runes:
     description: generic command.
     usage: /runes
+
+permissions:
+  smartrunes.give:
+    description: Give rune
+    default: op
+  smartrunes.reload:
+    description: Reload configuration
+    default: op
+  smartrunes.info:
+    description: View rune information
+    default: op

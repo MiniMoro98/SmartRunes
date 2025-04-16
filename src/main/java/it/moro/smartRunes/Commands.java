@@ -31,40 +31,46 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (command.getName().equalsIgnoreCase("runes")) {
                 if (args.length > 0) {
                     if (args[0].equalsIgnoreCase("reload")) {
-                        Runes.loadFile();
-                        player.sendMessage("§a[SmartRunes] Configuration Reloaded!");
+                        if (player.hasPermission("smartrunes.reload")) {
+                            Runes.loadFile();
+                            player.sendMessage("§a[SmartRunes] Configuration Reloaded!");
+                        }
                         return true;
                     } else if (args[0].equalsIgnoreCase("info")) {
-                        ItemStack item = player.getInventory().getItemInMainHand();
-                        if (!item.hasItemMeta()) {
-                            player.sendMessage("You have no object in your hand!");
-                            return true;
-                        }
-                        ItemMeta meta = item.getItemMeta();
-                        Map<String, Integer> enchantValues = readRuneEnchantLevels(meta, runesParameters);
-
-                        player.sendMessage("§e[SmartRunes] §7Rune Values:");
-                        enchantValues.forEach((id, value) -> {
-                            if (value > 0) {
-                                player.sendMessage("§6" + id + ": §f" + value);
-                            }
-                        });
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("give")) {
-                        int index = 0;
-                        for (String[] enchant : runesParameters) {
-                            if (args[1].equalsIgnoreCase(enchant[1])) {
-                                int lvl = Integer.parseInt(args[2]);
-                                if(lvl > getInt("Runes." + args[1] + ".effects.max-level")){
-                                    lvl  = getInt("Runes." + args[1] + ".effects.max-level");
-                                }
-                                ItemStack runa = rune(enchant[1], 100.0, index, lvl);
-                                player.getInventory().addItem(runa);
+                        if (player.hasPermission("smartrunes.info")) {
+                            ItemStack item = player.getInventory().getItemInMainHand();
+                            if (!item.hasItemMeta()) {
+                                player.sendMessage("You have no object in your hand!");
                                 return true;
                             }
-                            index++;
+                            ItemMeta meta = item.getItemMeta();
+                            Map<String, Integer> enchantValues = readRuneEnchantLevels(meta, runesParameters);
+
+                            player.sendMessage("§e[SmartRunes] §7Rune Values:");
+                            enchantValues.forEach((id, value) -> {
+                                if (value > 0) {
+                                    player.sendMessage("§6" + id + ": §f" + value);
+                                }
+                            });
                         }
-                        player.sendMessage("§cUnrecognized rune!!");
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("give")) {
+                        if (player.hasPermission("smartrunes.give")) {
+                            int index = 0;
+                            for (String[] enchant : runesParameters) {
+                                if (args[1].equalsIgnoreCase(enchant[1])) {
+                                    int lvl = Integer.parseInt(args[2]);
+                                    if (lvl > getInt("Runes." + args[1] + ".effects.max-level")) {
+                                        lvl = getInt("Runes." + args[1] + ".effects.max-level");
+                                    }
+                                    ItemStack runa = rune(enchant[1], 100.0, index, lvl);
+                                    player.getInventory().addItem(runa);
+                                    return true;
+                                }
+                                index++;
+                            }
+                            player.sendMessage("§cUnrecognized rune!!");
+                        }
                         return true;
                     }
                 }
@@ -81,7 +87,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (args.length == 1) {
                 if (player.hasPermission("smartrunes.reload")) suggestions.add("reload");
                 if (player.hasPermission("smartrunes.give")) suggestions.add("give");
-                suggestions.add("info");
+                if (player.hasPermission("smartrunes.info")) suggestions.add("info");
                 return suggestions.stream()
                         .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
                         .toList();
@@ -94,10 +100,10 @@ public class Commands implements CommandExecutor, TabCompleter {
                         .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                         .toList();
             }
-            if(args.length == 3 && args[0].equalsIgnoreCase("give")){
+            if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
                 int max = getInt("Runes." + args[1] + ".effects.max-level");
-                for(int i = 0; i < max; i++){
-                    suggestions.add(String.valueOf(i+1));
+                for (int i = 0; i < max; i++) {
+                    suggestions.add(String.valueOf(i + 1));
                 }
                 return suggestions.stream()
                         .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))

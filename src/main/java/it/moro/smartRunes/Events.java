@@ -51,6 +51,8 @@ public class Events implements Listener {
 
     String[] WaterMob = {"AXOLOTL", "COD", "DOLPHIN", "GLOW_SQUID", "GUARDIAN", "ELDER_GUARDIAN", "PUFFERFISH", "SALMON", "SQUID", "TROPICAL_FISH", "TURTLE"};
 
+    //--------------------------------------- RUNES APPLICATION --------------------------------------------------
+
     @EventHandler
     public void AssignmentRunes(InventoryClickEvent event) {
         if (event.getClick() == ClickType.RIGHT) return;
@@ -193,7 +195,7 @@ public class Events implements Listener {
             }
             player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
         }, 1L);
-    } //DivineHandiwork
+    } //DivineHandiwork, Reinforcement
 
     @EventHandler
     public void AssignmentRunes1(PlayerFishEvent event) {
@@ -215,6 +217,117 @@ public class Events implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void AssignmentRunes2(EntityDeathEvent event) {
+        event.getDrops().add(divineHandiwork());
+        event.getDrops().add(mobHunter());
+        event.getDrops().add(wildMagicStrike());
+        Player killer = event.getEntity().getKiller();
+        if (killer != null) {
+            if (event.getEntity() instanceof Monster) {
+                event.getDrops().add(artifactHunter());
+                event.getDrops().add(blessingOfWisdom());
+                event.getDrops().add(reinforcement1());
+                if (event.getEntity().getType() == EntityType.CREEPER) {
+                    event.getDrops().add(antiGravThrow());
+                } else if (event.getEntity().getType() == EntityType.ENDERMAN) {
+                    event.getDrops().add(enderShot());
+                } else if (event.getEntity().getType() == EntityType.SPIDER || event.getEntity().getType() == EntityType.ZOMBIE || event.getEntity().getType() == EntityType.SKELETON) {
+                    event.getDrops().add(minersEyes1());
+                    if (event.getEntity().getType() == EntityType.SKELETON) {
+                        event.getDrops().add(phantomArrow());
+                    }
+                } else if (event.getEntity().getType() == EntityType.DROWNED || event.getEntity().getType() == EntityType.GUARDIAN || event.getEntity().getType() == EntityType.ELDER_GUARDIAN) {
+                    event.getDrops().add(oceansSting());
+                    if (event.getEntity().getType() == EntityType.DROWNED) {
+                        event.getDrops().add(minersEyes2());
+                    }
+                } else if (event.getEntity().getType() == EntityType.PILLAGER) {
+                    event.getDrops().add(phantomArrow1());
+                    event.getDrops().add(phantomStrike1());
+                    event.getDrops().add(precision1());
+                    event.getDrops().add(treeAntiHugger1());
+                } else if (event.getEntity().getType() == EntityType.WITHER_SKELETON) {
+                    event.getDrops().add(phantomStrike());
+                    event.getDrops().add(precision());
+                } else if (event.getEntity().getType() == EntityType.BLAZE) {
+                    event.getDrops().add(resonatingHit1());
+                } else {
+                    event.getDrops().add(blessingOfWisdom());
+                }
+            }
+            if (event.getEntity().getType() == EntityType.WOLF) {
+                event.getDrops().add(packAlpha());
+            } else if (event.getEntity().getType() == EntityType.IRON_GOLEM) {
+                event.getDrops().add(reinforcement());
+            }
+            for (String s : WaterMob) {
+                if (event.getEntity().getName().toUpperCase().contains(s)) {
+                    event.getDrops().add(littleFish2());
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void AssignmentRunes3(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        if (isPlantTable(block.getType())) {
+            BlockData blockData = block.getBlockData();
+            if (blockData instanceof Ageable ageable) {
+                if (ageable.getAge() == ageable.getMaximumAge()) {
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), farmlandManagement());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), greenThumb());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), masterHarvester());
+                }
+            }
+        } else if (block.getType() == Material.MELON) {
+            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () -> {
+                if (isAdjacentToStem(block, Material.MELON_STEM)) {
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), farmlandManagement());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), greenThumb());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), masterHarvester());
+                }
+            }, 1L);
+        } else if (block.getType() == Material.PUMPKIN) {
+            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () -> {
+                if (isAdjacentToStem(block, Material.PUMPKIN_STEM)) {
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), farmlandManagement());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), greenThumb());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), masterHarvester());
+                }
+            }, 1L);
+        }
+        event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), divineHandiwork());
+        ItemStack tool = event.getPlayer().getInventory().getItemInMainHand();
+        if (tool.getType().toString().contains("_PICKAXE") || tool.getType().toString().contains("_SHOVEL")) {
+            event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), expertMining());
+            if (tool.getType().toString().contains("_PICKAXE")) {
+                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), minersEyes());
+                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), reinforcement3());
+            }
+        }
+        if (block.getType().toString().contains("_LOG") || block.getType().toString().contains("_STEM") || block.getType().toString().contains("_LEAVES")) {
+            event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), reinforcement2());
+            event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), treeAntiHugger());
+        }
+        for (int i = 0; i < material.length; i++) {
+            if (block.getType().toString().equalsIgnoreCase(material[i])) {
+                if (i >= 6) {
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), expertExtraction());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), blessingOfWisdom());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), smoothTalker());
+                }
+                if (i >= 4) {
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), artifactHunter());
+                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), resonatingHit());
+                }
+            }
+        }
+    }
+
+    //---------------------------------------- RUNES EFFECT ----------------------------------------------------
 
     @EventHandler
     public void onFishing(PlayerFishEvent event) {
@@ -302,58 +415,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void AssignmentRunes2(EntityDeathEvent event) {
-        event.getDrops().add(divineHandiwork());
-        event.getDrops().add(mobHunter());
-        event.getDrops().add(wildMagicStrike());
-        Player killer = event.getEntity().getKiller();
-        if (killer != null) {
-            if (event.getEntity() instanceof Monster) {
-                event.getDrops().add(artifactHunter());
-                event.getDrops().add(blessingOfWisdom());
-                event.getDrops().add(reinforcement1());
-                if (event.getEntity().getType() == EntityType.CREEPER) {
-                    event.getDrops().add(antiGravThrow());
-                } else if (event.getEntity().getType() == EntityType.ENDERMAN) {
-                    event.getDrops().add(enderShot());
-                } else if (event.getEntity().getType() == EntityType.SPIDER || event.getEntity().getType() == EntityType.ZOMBIE || event.getEntity().getType() == EntityType.SKELETON) {
-                    event.getDrops().add(minersEyes1());
-                    if (event.getEntity().getType() == EntityType.SKELETON) {
-                        event.getDrops().add(phantomArrow());
-                    }
-                } else if (event.getEntity().getType() == EntityType.DROWNED || event.getEntity().getType() == EntityType.GUARDIAN || event.getEntity().getType() == EntityType.ELDER_GUARDIAN) {
-                    event.getDrops().add(oceansSting());
-                    if (event.getEntity().getType() == EntityType.DROWNED) {
-                        event.getDrops().add(minersEyes2());
-                    }
-                } else if (event.getEntity().getType() == EntityType.PILLAGER) {
-                    event.getDrops().add(phantomArrow1());
-                    event.getDrops().add(phantomStrike1());
-                    event.getDrops().add(precision1());
-                    event.getDrops().add(treeAntiHugger1());
-                } else if (event.getEntity().getType() == EntityType.WITHER_SKELETON) {
-                    event.getDrops().add(phantomStrike());
-                    event.getDrops().add(precision());
-                } else if (event.getEntity().getType() == EntityType.BLAZE) {
-                    event.getDrops().add(resonatingHit1());
-                } else {
-                    event.getDrops().add(blessingOfWisdom());
-                }
-            }
-            if (event.getEntity().getType() == EntityType.WOLF) {
-                event.getDrops().add(packAlpha());
-            } else if (event.getEntity().getType() == EntityType.IRON_GOLEM) {
-                event.getDrops().add(reinforcement());
-            }
-            for (String s : WaterMob) {
-                if (event.getEntity().getName().toUpperCase().contains(s)) {
-                    event.getDrops().add(littleFish2());
-                }
-            }
-        }
-    }
-
-    @EventHandler
     public void BlessingOfWisdom(EntityDeathEvent event) {
         Player player = event.getEntity().getKiller();
         if (player != null) {
@@ -424,57 +485,30 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void AssignmentRunes3(BlockBreakEvent event) {
-        Block block = event.getBlock();
-        if (isPlantTable(block.getType())) {
-            BlockData blockData = block.getBlockData();
-            if (blockData instanceof Ageable ageable) {
-                if (ageable.getAge() == ageable.getMaximumAge()) {
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), farmlandManagement());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), greenThumb());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), masterHarvester());
-                }
-            }
-        } else if (block.getType() == Material.MELON) {
-            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () -> {
-                if (isAdjacentToStem(block, Material.MELON_STEM)) {
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), farmlandManagement());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), greenThumb());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), masterHarvester());
-                }
-            }, 1L);
-        } else if (block.getType() == Material.PUMPKIN) {
-            Bukkit.getScheduler().runTaskLater(SmartRunes.getInstance(), () -> {
-                if (isAdjacentToStem(block, Material.PUMPKIN_STEM)) {
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), farmlandManagement());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), greenThumb());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), masterHarvester());
-                }
-            }, 1L);
+    public void MobHunter(EntityDeathEvent event) {
+        Entity entity = event.getEntity();
+        Player killer = event.getEntity().getKiller();
+        if (killer == null) return;
+        ItemStack arma = killer.getInventory().getItemInMainHand();
+        if (!arma.hasItemMeta()) {
+            return;
         }
-        event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), divineHandiwork());
-        ItemStack tool = event.getPlayer().getInventory().getItemInMainHand();
-        if (tool.getType().toString().contains("_PICKAXE") || tool.getType().toString().contains("_SHOVEL")) {
-            event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), expertMining());
-            if (tool.getType().toString().contains("_PICKAXE")) {
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), minersEyes());
-                event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), reinforcement3());
-            }
-        }
-        if (block.getType().toString().contains("_LOG") || block.getType().toString().contains("_STEM") || block.getType().toString().contains("_LEAVES")) {
-            event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), reinforcement2());
-            event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), treeAntiHugger());
-        }
-        for (int i = 0; i < material.length; i++) {
-            if (block.getType().toString().equalsIgnoreCase(material[i])) {
-                if (i >= 6) {
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), expertExtraction());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), blessingOfWisdom());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), smoothTalker());
-                }
-                if (i >= 4) {
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), artifactHunter());
-                    event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), resonatingHit());
+        List<String> lista = getList("Runes.MobHunter.applied-to");
+        for (String s : lista) {
+            if (arma.getType().toString().contains(s)) {
+                ItemMeta meta = arma.getItemMeta();
+                PersistentDataContainer data = meta.getPersistentDataContainer();
+                NamespacedKey key = new NamespacedKey("smartrunes", "mobhunter");
+                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+                if (level > 0) {
+                    int chance = getInt("Runes.MobHunter.effects.chance-drop-egg");
+                    if (checkSuccess(chance)) {
+                        Material eggMaterial = Material.getMaterial(entity.getType().name() + "_SPAWN_EGG");
+                        if (eggMaterial != null) {
+                            ItemStack spawnEgg = new ItemStack(eggMaterial);
+                            entity.getWorld().dropItemNaturally(entity.getLocation(), spawnEgg);
+                        }
+                    }
                 }
             }
         }
@@ -875,36 +909,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void MobHunter(EntityDeathEvent event) {
-        Entity entity = event.getEntity();
-        Player killer = event.getEntity().getKiller();
-        if (killer == null) return;
-        ItemStack arma = killer.getInventory().getItemInMainHand();
-        if (!arma.hasItemMeta()) {
-            return;
-        }
-        List<String> lista = getList("Runes.MobHunter.applied-to");
-        for (String s : lista) {
-            if (arma.getType().toString().contains(s)) {
-                ItemMeta meta = arma.getItemMeta();
-                PersistentDataContainer data = meta.getPersistentDataContainer();
-                NamespacedKey key = new NamespacedKey("smartrunes", "mobhunter");
-                int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
-                if (level > 0) {
-                    int chance = getInt("Runes.MobHunter.effects.chance-drop-egg");
-                    if (checkSuccess(chance)) {
-                        Material eggMaterial = Material.getMaterial(entity.getType().name() + "_SPAWN_EGG");
-                        if (eggMaterial != null) {
-                            ItemStack spawnEgg = new ItemStack(eggMaterial);
-                            entity.getWorld().dropItemNaturally(entity.getLocation(), spawnEgg);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @EventHandler
     public void OceansSting(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player player)) return;
         if (!(event.getEntity() instanceof LivingEntity target)) return;
@@ -1074,6 +1078,7 @@ public class Events implements Listener {
                         Set<Block> visited = new HashSet<>();
                         Queue<Block> queue = new LinkedList<>();
                         queue.add(block);
+                        int count = 0;
                         while (!queue.isEmpty()) {
                             Block current = queue.poll();
                             if (!visited.add(current)) continue;
@@ -1085,7 +1090,14 @@ public class Events implements Listener {
                                 }
                             }
                             current.breakNaturally(item);
-                            damageTool(item, player);
+                            if(level == 1){
+                                damageTool(item, player);
+                            } else {
+                                if (count % 2 != 0) {
+                                    damageTool(item, player);
+                                }
+                            }
+                            count++;
                         }
                     }
                 }
@@ -1224,5 +1236,34 @@ public class Events implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void ThoroughInspection1(BlockBreakEvent event) {
+        Block block = event.getBlock();
+        ItemStack type = event.getPlayer().getInventory().getHelmet();
+        if(type != null && type.hasItemMeta()) {
+            ItemMeta meta = type.getItemMeta();
+            PersistentDataContainer data = meta.getPersistentDataContainer();
+            NamespacedKey key = new NamespacedKey("smartrunes", "thoroughinspection");
+            int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+            if (level <= 0) return;
+            List<String> validTypes = getList("Runes.ThoroughInspection.applied-to");
+            for (String s : validTypes) {
+                if (type.getType().toString().contains(s)) {
+                    if (!(block.getBlockData() instanceof Ageable ageable)) return;
+                    if (ageable.getAge() == ageable.getMaximumAge()) {
+                        double chance = getInt("Runes.ThoroughInspection.effects.increase") * 0.01;
+                        if (Math.random() <= chance * level) {
+                            SmartRunes.eco.depositPlayer(event.getPlayer(), getDouble("Runes.ThoroughInspection.effects.money"));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //ThoroughInspection2 rottura blocchi con tool
+
+    //ThoroughInspection kill mobs
+
 
 }
