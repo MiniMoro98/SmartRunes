@@ -92,6 +92,8 @@ Runes:
       - _CHESTPLATE
       - _LEGGINGS
       - FISHING_ROD
+      - SHEARS
+      - FLINT_AND_STEEL
 
   EnderShot:
     enable: true

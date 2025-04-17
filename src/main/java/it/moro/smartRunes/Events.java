@@ -87,7 +87,7 @@ public class Events implements Listener {
                 }
             }
         }
-        if(!getBool("Runes." + array[index][1] + ".enable")) return;
+        if (!getBool("Runes." + array[index][1] + ".enable")) return;
         List<String> lista;
         lista = getList("Runes." + array[index][1] + ".applied-to");
         boolean applicabile = false;
@@ -402,7 +402,7 @@ public class Events implements Listener {
                 }
             }
         }
-    } // BaitMaster, SaltOfTheSea, Angler, BaitMaster, LongCast
+    } // BaitMaster, SaltOfTheSea, Angler, LongCast
 
     public static Double increase(double percentuale, double livello, double numero) {
         double probability = percentuale * livello;
@@ -704,76 +704,92 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void FarmlandManagement(BlockBreakEvent event) {
+    public void onHoe(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (checkItems(item, "FarmlandManagement")) return;
-        int level = getLevel(item, "FarmlandManagement");
-        if (level <= 0) return;
+        if (!item.getType().toString().contains("_HOE")) return;
+        int greenthumb = getLevel(item, "GreenThumb");
+        int farmlandmanagement = getLevel(item, "FarmlandManagement");
+        int masterharvester = getLevel(item, "MasterHarvester");
+        int maxValue = Math.max(greenthumb, farmlandmanagement);
         int radius;
-        switch (level) {
-            case 1 -> radius = 1;
-            case 2 -> radius = 2;
-            case 3 -> radius = 3;
-            case 4 -> radius = 4;
-            default -> {
-                return;
-            }
-        }
-        Location blockLocation = block.getLocation();
-        for (int x = -radius; x <= radius; x++) {
-            for (int z = -radius; z <= radius; z++) {
-                Location checkLoc = blockLocation.clone().add(x, 0, z);
-                Block checkBlock = checkLoc.getBlock();
-                if (checkBlock.getType() == Material.MELON_STEM || checkBlock.getType() == Material.PUMPKIN_STEM)
-                    continue;
-                if (checkBlock.getBlockData() instanceof Ageable ageable) {
-                    if (ageable.getAge() == ageable.getMaximumAge()) {
-                        checkBlock.breakNaturally(item);
-                    }
+        if (farmlandmanagement > 0 || greenthumb > 0) {
+            switch (maxValue) {
+                case 1 -> radius = 1;
+                case 2 -> radius = 2;
+                case 3 -> radius = 3;
+                case 4 -> radius = 4;
+                case 5 -> radius = 5;
+                default -> {
+                    return;
                 }
             }
-        }
-    }
+            Location blockLocation = block.getLocation();
+            for (int x = -radius; x <= radius; x++) {
+                for (int z = -radius; z <= radius; z++) {
+                    Location checkLoc = blockLocation.clone().add(x, 0, z);
+                    Block checkBlock = checkLoc.getBlock();
+                    if (checkBlock.getType() == Material.MELON_STEM || checkBlock.getType() == Material.PUMPKIN_STEM)
+                        continue;
+                    if (checkBlock.getBlockData() instanceof Ageable ageable) {
+                        if (ageable.getAge() == ageable.getMaximumAge()) {
 
-    @EventHandler
-    public void GreenThumb(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        ItemStack item = player.getInventory().getItemInMainHand();
-        if (checkItems(item, "GreenThumb")) return;
-        int level = getLevel(item, "GreenThumb");
-        if (level <= 0) return;
-        Location blockLocation = block.getLocation();
-        for (int x = -level; x <= level; x++) {
-            for (int z = -level; z <= level; z++) {
-                Location checkLoc = blockLocation.clone().add(x, 0, z);
-                Block targetBlock = checkLoc.getBlock();
-                if (targetBlock.getType() == Material.MELON || targetBlock.getType() == Material.PUMPKIN)
-                    continue;
-                if (targetBlock.getBlockData() instanceof Ageable ageable && ageable.getAge() == ageable.getMaximumAge()) {
-                    Material cropType = targetBlock.getType();
-                    targetBlock.breakNaturally(item);
-                    Block soil = checkLoc.clone().subtract(0, 1, 0).getBlock();
-                    if (soil.getType() == Material.FARMLAND) {
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                            Material seed = getSeedFromCrop(cropType);
-                            if (seed != null) {
-                                targetBlock.setType(cropType);
-                                BlockData newData = targetBlock.getBlockData();
-                                if (newData instanceof Ageable newAgeable) {
-                                    newAgeable.setAge(0);
-                                    targetBlock.setBlockData(newAgeable);
-                                }
-                                player.getInventory().removeItem(new ItemStack(seed, 1));
+                            // Sempre raccoglie se uno dei due è attivo
+                            Material cropType = checkBlock.getType();
+                            Collection<ItemStack> drops = checkBlock.getDrops(item);
+                            checkBlock.setType(Material.AIR);
+                            for (ItemStack drop : drops) {
+                                checkBlock.getWorld().dropItemNaturally(checkBlock.getLocation(), drop);
                             }
-                        }, 1L);
+                            damageTool(item, player);
+
+                            // Solo GreenThumb reimpianta
+                            if (greenthumb > 0) {
+                                Material seed = getSeedFromCrop(cropType);
+                                if (seed != null) {
+                                    checkBlock.setType(cropType);
+                                    BlockData newData = checkBlock.getBlockData();
+                                    if (newData instanceof Ageable newAgeable) {
+                                        newAgeable.setAge(0);
+                                        checkBlock.setBlockData(newAgeable);
+                                    }
+                                }
+                            }
+
+                            // MasterHarvester bonus drop
+                            if (masterharvester > 0) {
+                                double chance = getDouble("Runes.MasterHarvester.effects.increase") * 0.01;
+                                if (Math.random() <= chance * masterharvester) {
+                                    for (ItemStack drop : drops) {
+                                        int amount = drop.getAmount();
+                                        drop.setAmount(amount + 1);
+                                        checkBlock.getWorld().dropItemNaturally(checkBlock.getLocation(), drop);
+                                        damageTool(item, player);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (masterharvester > 0) {
+            if (block.getBlockData() instanceof Ageable ageable) {
+                if (ageable.getAge() == ageable.getMaximumAge()) {
+                    double chance = getDouble("Runes.MasterHarvester.effects.increase") * 0.01;
+                    if (Math.random() <= chance * masterharvester) {
+                        Collection<ItemStack> drops = block.getDrops(item);
+                        for (ItemStack drop : drops) {
+                            int amount = drop.getAmount();
+                            drop.setAmount(amount + 1);
+                            block.getWorld().dropItemNaturally(block.getLocation(), drop);
+                            damageTool(item, player);
+                        }
                     }
                 }
             }
         }
-    }
+    } // MasterHarvester, GreenThumb, FarmlandManagement
 
     private Material getSeedFromCrop(Material crop) {
         return switch (crop) {
@@ -810,7 +826,8 @@ public class Events implements Listener {
         NamespacedKey key = new NamespacedKey("smartrunes", "minerseyes");
         int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
         if (level <= 0) return;
-        player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 220, 0, false, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 400, 0, false, false, false));
+
     }
 
     @EventHandler
@@ -1044,31 +1061,6 @@ public class Events implements Listener {
                     }
                 }
             }.runTaskLater(plugin, 20 * delay);
-        }
-    }
-
-    @EventHandler
-    public void MasterHarvester(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        ItemStack tool = player.getInventory().getItemInMainHand();
-        if (checkItems(tool, "MasterHarvester")) return;
-        int level = getLevel(tool, "MasterHarvester");
-        if (level <= 0) return;
-        Ageable ageable;
-        if (block.getBlockData() instanceof Ageable age) {
-            ageable = age;
-        } else return;
-        if (ageable.getAge() != ageable.getMaximumAge()) return;
-        double incremento = getDouble("Runes.MasterHarvester.effects.increase") * 0.01;
-        double chance = level * incremento;
-        if (Math.random() < chance) {
-            Collection<ItemStack> drops = block.getDrops(tool);
-            for (ItemStack drop : drops) {
-                ItemStack bonus = drop.clone();
-                bonus.setAmount(drop.getAmount());
-                block.getWorld().dropItemNaturally(block.getLocation(), bonus);
-            }
         }
     }
 
