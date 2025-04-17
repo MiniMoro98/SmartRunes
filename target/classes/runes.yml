@@ -1,5 +1,6 @@
 Runes:
   Angler:
+    enable: true
     text: "&b&lAngler"
     material: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
@@ -10,6 +11,7 @@ Runes:
       - FISHING_ROD
 
   AntiGravThrow:
+    enable: true
     text: "Anti-Grav Throw"
     material: BOLT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.4 %
@@ -18,8 +20,14 @@ Runes:
       max-level: 3
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   ArtifactHunter:
+    enable: true
     text: "Artifact Hunter"
     material: WILD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.5 #0.5 %
@@ -33,6 +41,7 @@ Runes:
       - _LEGGINGS
 
   BaitMaster:
+    enable: true
     text: "Bait Master"
     material: SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.4 %
@@ -43,6 +52,7 @@ Runes:
       - FISHING_ROD
 
   BlessingOfWisdom:
+    enable: true
     text: "Blessing Of Wisdom"
     material: VEX_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %
@@ -50,31 +60,41 @@ Runes:
       increase: 2
       max-level: 5
     applied-to:
-      - _PICKAXE
       - _SWORD
       - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
+      - _PICKAXE
       - _SHOVEL
       - _HOE
 
   DivineHandiwork:
+    enable: true
     text: "Divine Handiwork"
     material: COAST_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.01 #0.01 %
     effects:
       max-level: 1
     applied-to:
-      - _PICKAXE
       - _SWORD
       - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
+      - _PICKAXE
       - _SHOVEL
       - _HOE
-      - _CHESTPLATE
-      - _BOOTS
       - _HELMET
+      - _BOOTS
+      - _CHESTPLATE
       - _LEGGINGS
       - FISHING_ROD
 
   EnderShot:
+    enable: true
     text: "Ender Shot"
     material: SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
@@ -85,6 +105,7 @@ Runes:
       - CROSSBOW
 
   ExpertExtraction:
+    enable: true
     text: "Expert Extraction"
     material: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.04 #0.04 %
@@ -95,6 +116,7 @@ Runes:
       - _PICKAXE
 
   ExpertMining:
+    enable: true
     text: "Expert Mining"
     material: RIB_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.04 #0.04 %
@@ -105,6 +127,7 @@ Runes:
       - _SHOVEL
 
   FarmlandManagement:
+    enable: true
     text: "Farmland Management"
     material: WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %
@@ -114,6 +137,7 @@ Runes:
       - _HOE
 
   GreenThumb:
+    enable: true
     text: "Green Thumb"
     material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.08 #0.08 %
@@ -123,16 +147,30 @@ Runes:
       - _HOE
 
   LittleFish:
+    enable: true
     text: "Little Fish"
     material: SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-fishing: 0.4 #0.4
     chance-drop-kill-water-mob: 0.08 #0.08 %
+    water-mobs:
+      - AXOLOTL
+      - COD
+      - DOLPHIN
+      - GLOW_SQUID
+      - GUARDIAN
+      - ELDER_GUARDIAN
+      - PUFFERFISH
+      - SALMON
+      - SQUID
+      - TROPICAL_FISH
+      - TURTLE
     effects:
       max-level: 1
     applied-to:
       - _HELMET
 
   LongCast:
+    enable: true
     text: "Long Cast"
     material: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.04 %
@@ -143,10 +181,11 @@ Runes:
     applied-to:
       - FISHING_ROD
 
-  MasterHarvester: #0.02 %
+  MasterHarvester:
+    enable: true
     text: "Master Harvester"
     material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
-    chance-drop: 0.02
+    chance-drop: 0.02 #0.02 %
     effects:
       increase: 15
       max-level: 5
@@ -154,6 +193,7 @@ Runes:
       - _HOE
 
   MinersEyes:
+    enable: true
     text: "Miner's Eyes"
     material: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-block: 0.02 #0.02 %
@@ -166,6 +206,7 @@ Runes:
       - _HELMET
 
   MobHunter:
+    enable: true
     text: "Mob Hunter"
     material: WARD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.02 #0.02 %
@@ -174,29 +215,56 @@ Runes:
       max-level: 1
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   OceansSting:
+    enable: true
     text: "Ocean's Sting"
     material: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.1 #0.1 %
     effects:
       increase: 2
       max-level: 5
+      mobs:
+        - ENDERMAN
+        - BLAZE
+        - MAGMA_CUBE
+        - STRIDER
+        - WITHER_SKELETON
+        - HUSK
+        - WITHER
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   PackAlpha:
+    enable: true
     text: "Pack Alpha"
     material: SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
-      wolf-heal: 40
+      wolf-heal: 40 #life of the wolf
+      wolf-time: 30 #seconds to despawn
       increase: 1
       max-level: 3
     applied-to:
       - _SWORD
+      - _AXE
+      - MACE
+      - TRIDENT
+      - BOW
+      - CROSSBOW
 
   PhantomArrow:
+    enable: true
     text: "Phantom Arrow"
     material: WARD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-skeletons: 0.05 #0.05 %
@@ -209,6 +277,7 @@ Runes:
       - CROSSBOW
 
   PhantomStrike:
+    enable: true
     text: "Phantom Strike"
     material: SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-skeletons: 0.2 #0.2 %
@@ -221,8 +290,9 @@ Runes:
       - _AXE
       - MACE
 
-  # TO BE IMPLEMENTED
+  # DISABLED
   Precision:
+    enable: false
     text: "Precision"
     material: EYE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-skeletons: 0.2 #0.2 %
@@ -235,6 +305,7 @@ Runes:
       - CROSSBOW
 
   Reinforcement:
+    enable: true
     text: "Reinforcement"
     material: DUNE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-golem: 0.06 #0.06 %
@@ -251,6 +322,7 @@ Runes:
       - _LEGGINGS
 
   ResonatingHit:
+    enable: true
     text: "Resonating Hit"
     material: SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-ores: 0.1 #0.1 %
@@ -262,6 +334,7 @@ Runes:
       - _PICKAXE
 
   SaltOfTheSea:
+    enable: true
     text: "Salt Of The Sea"
     material: FLOW_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.4 #0.4 %
@@ -271,8 +344,8 @@ Runes:
     applied-to:
       - FISHING_ROD
 
-  # TO BE IMPLEMENTED
   ThoroughInspection:
+    enable: true
     text: "Thorough Inspection"
     material: TIDE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.08 #0.08 %
@@ -284,6 +357,7 @@ Runes:
       - _HELMET
 
   TreeAntiHugger:
+    enable: true
     text: "Tree Anti-Hugger"
     material: HOST_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop-tree: 0.05 #0.05 %
@@ -310,6 +384,7 @@ Runes:
       - _AXE
 
   WildMagicStrike:
+    enable: true
     text: "Wild Magic Strike"
     material: WILD_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.05 #0.05 %

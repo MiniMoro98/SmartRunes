@@ -1,5 +1,5 @@
 name: SmartRunes
-version: 0.0.4
+version: 0.0.7
 main: it.moro.smartRunes.SmartRunes
 api-version: '1.20'
 softdepend:
