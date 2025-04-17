@@ -6,7 +6,7 @@
 
     <groupId>it.moro.smartRunes</groupId>
     <artifactId>SmartRunes</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.7</version>
     <packaging>jar</packaging>
 
     <name>SmartRunes</name>
