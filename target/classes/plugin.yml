@@ -1,5 +1,5 @@
 name: SmartRunes
-version: 0.0.7
+version: 0.0.9
 main: it.moro.smartRunes.SmartRunes
 api-version: '1.20'
 softdepend:
@@ -7,8 +7,8 @@ softdepend:
 
 commands:
   runes:
-    description: generic command.
-    usage: /runes
+    description: General command.
+    usage: /runes give | info | reload
 
 permissions:
   smartrunes.give:

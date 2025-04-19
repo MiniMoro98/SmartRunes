@@ -92,6 +92,8 @@ Runes:
       - _CHESTPLATE
       - _LEGGINGS
       - FISHING_ROD
+      - SHEARS
+      - FLINT_AND_STEEL
 
   EnderShot:
     enable: true
@@ -99,6 +101,7 @@ Runes:
     material: SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE
     chance-drop: 0.2 #0.2 %
     effects:
+      timeout: 10 #seconds
       max-level: 1
     applied-to:
       - BOW
@@ -351,6 +354,7 @@ Runes:
     chance-drop: 0.08 #0.08 %
     effects:
       money: 1000
+      message: "&aYou found $1,000 with your sharp eyes!"
       increase: 1
       max-level: 5
     applied-to:

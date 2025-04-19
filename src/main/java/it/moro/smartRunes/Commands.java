@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static it.moro.smartRunes.Runes.*;
+import static org.apache.commons.lang.math.NumberUtils.isNumber;
 
 public class Commands implements CommandExecutor, TabCompleter {
 
@@ -56,22 +57,31 @@ public class Commands implements CommandExecutor, TabCompleter {
                         return true;
                     } else if (args[0].equalsIgnoreCase("give")) {
                         if (player.hasPermission("smartrunes.give")) {
-                            int index = 0;
-                            for (String[] enchant : runesParameters) {
-                                if (args[1].equalsIgnoreCase(enchant[1])) {
-                                    int lvl = Integer.parseInt(args[2]);
-                                    if (lvl > getInt("Runes." + args[1] + ".effects.max-level")) {
-                                        lvl = getInt("Runes." + args[1] + ".effects.max-level");
+                            if (args.length == 3) {
+                                if(isNumber(args[2])) {
+                                    int index = 0;
+                                    for (String[] enchant : runesParameters) {
+                                        if (args[1].equalsIgnoreCase(enchant[1])) {
+                                            int lvl = Integer.parseInt(args[2]);
+                                            if (lvl > getInt("Runes." + args[1] + ".effects.max-level")) {
+                                                lvl = getInt("Runes." + args[1] + ".effects.max-level");
+                                            }
+                                            ItemStack runa = rune(enchant[1], 100.0, index, lvl);
+                                            player.getInventory().addItem(runa);
+                                            return true;
+                                        }
+                                        index++;
                                     }
-                                    ItemStack runa = rune(enchant[1], 100.0, index, lvl);
-                                    player.getInventory().addItem(runa);
+                                    player.sendMessage("§cUnrecognized rune!!");
+                                } else {
+                                    player.sendMessage("/runes give <rune> <level>");
                                     return true;
                                 }
-                                index++;
+                            } else{
+                                player.sendMessage("/runes give <rune> <level>");
+                                return true;
                             }
-                            player.sendMessage("§cUnrecognized rune!!");
                         }
-                        return true;
                     }
                 }
             }
@@ -101,6 +111,13 @@ public class Commands implements CommandExecutor, TabCompleter {
                         .toList();
             }
             if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
+                boolean exist = false;
+                for(String[] runes: runesParameters){
+                    if(args[1].equalsIgnoreCase(runes[1])){
+                        exist = true;
+                    }
+                }
+                if (!exist) return Collections.emptyList();
                 int max = getInt("Runes." + args[1] + ".effects.max-level");
                 for (int i = 0; i < max; i++) {
                     suggestions.add(String.valueOf(i + 1));

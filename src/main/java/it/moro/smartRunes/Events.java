@@ -14,12 +14,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.inventory.GrindstoneInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,6 +39,7 @@ public class Events implements Listener {
     private static SmartRunes plugin;
 
     private final Map<UUID, List<Wolf>> playerWolves = new HashMap<>();
+    private final HashMap<Player, Long> lastShotTimes = new HashMap<>();
 
     public Events(SmartRunes plugin) {
         Events.plugin = plugin;
@@ -73,32 +73,30 @@ public class Events implements Listener {
         int[] runeLvl = new int[27];
         int index = 0;
         for (int f = 0; f < runesParameters.length; f++) {
-            String id = runesParameters[f][1].toLowerCase();
-            NamespacedKey key = new NamespacedKey("smartrunes", id);
-            if (data.has(key, PersistentDataType.INTEGER)) {
-                Integer value = data.get(key, PersistentDataType.INTEGER);
-                if (value != null) {
-                    if (value > 0) {
-                        array[f][0] = id;
-                        runeLvl[f] = value;
-                        array[f][1] = runesParameters[f][1];
-                        index = f;
-                    }
-                }
+            int value = getLevel(cursor, runesParameters[f][1].toLowerCase());
+            if (value > 0) {
+                array[f][0] = runesParameters[f][1].toLowerCase();
+                runeLvl[f] = value;
+                array[f][1] = runesParameters[f][1];
+                index = f;
             }
         }
         if (!getBool("Runes." + array[index][1] + ".enable")) return;
-        List<String> lista;
-        lista = getList("Runes." + array[index][1] + ".applied-to");
-        boolean applicabile = false;
-        String item = target.getType().toString();
-        for (String s : lista) {
-            if (item.contains(s)) {
-                applicabile = true;
-                break;
-            }
-        }
-        if (!applicabile) return;
+
+        if (filterRune(player, cursor, "AntiGravThrow", target, "PhantomStrike")) return;
+        if (filterRune(player, cursor, "AntiGravThrow", target, "HeavyStrike")) return;
+        if (filterRune(player, cursor, "PhantomStrike", target, "AntiGravThrow")) return;
+        if (filterRune(player, cursor, "PhantomStrike", target, "HeavyStrike")) return;
+        if (filterRune(player, cursor, "PhantomArrow", target, "EnderShot")) return;
+        if (filterRune(player, cursor, "EnderShot", target, "PhantomArrow")) return;
+        if (filterRune(player, cursor, "DivineHandiwork", target, "AntiGravThrow")) return;
+        if (filterRune(player, cursor, "DivineHandiwork", target, "CripplingBlow")) return;
+        if (filterRune(player, cursor, "DivineHandiwork", target, "EnderShot")) return;
+        if (filterRune(player, cursor, "DivineHandiwork", target, "HeavyStrike")) return;
+        if (filterRune(player, cursor, "DivineHandiwork", target, "PiercingStrike")) return;
+
+        boolean applicabile = checkItems(target, array[index][1]);
+        if (applicabile) return;
         ItemMeta metaTarget = target.getItemMeta();
         if (metaTarget == null) return;
         PersistentDataContainer dataTarget = metaTarget.getPersistentDataContainer();
@@ -131,13 +129,8 @@ public class Events implements Listener {
         } else {
             int[] livelli = new int[27];
             for (int s = 0; s < runesParameters.length; s++) {
-                NamespacedKey key = new NamespacedKey("smartrunes", runesParameters[s][1].toLowerCase());
-                if (dataTarget.has(key, PersistentDataType.INTEGER)) {
-                    Integer value1 = dataTarget.get(key, PersistentDataType.INTEGER);
-                    if (value1 != null) {
-                        livelli[s] = value1;
-                    }
-                }
+                int value1 = getLevel(target, runesParameters[s][1].toLowerCase());
+                livelli[s] = value1;
             }
             boolean ritorno = false;
             for (int s = 0; s < runesParameters.length; s++) {
@@ -192,7 +185,7 @@ public class Events implements Listener {
             } else {
                 player.setItemOnCursor(new ItemStack(Material.AIR));
             }
-            player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1f, 1f);
+            player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 0.4f, 1f);
         }, 1L);
     } //DivineHandiwork, Reinforcement
 
@@ -421,7 +414,6 @@ public class Events implements Listener {
 
     private void handleArtifactHunter(Player player, EntityDeathEvent event) {
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-        if (checkItems(mainHand, "ArtifactHunter")) return;
         int artifactHunterLevel = getLevel(mainHand, "ArtifactHunter");
         if (artifactHunterLevel <= 0) return;
         double probability = getDouble("Runes.ArtifactHunter.effects.probability");
@@ -449,7 +441,6 @@ public class Events implements Listener {
             weapon = player.getInventory().getItemInMainHand();
             giocatore = player;
         }
-        if (checkItems(weapon, "MobHunter")) return;
         int mobHunterLevel = getLevel(weapon, "MobHunter");
         if (mobHunterLevel <= 0) return;
         int chance = getInt("Runes.MobHunter.effects.chance-drop-egg");
@@ -492,12 +483,10 @@ public class Events implements Listener {
     }
 
     private void BlessingOfWisdom(Player player, double originalExp, ItemStack utensile, java.util.function.DoubleConsumer expSetter) {
-        if (!utensile.hasItemMeta()) return;
-        if (checkItems(utensile, "BlessingOfWisdom")) return;
-        int level = getLevel(utensile, "BlessingOfWisdom");
-        if (level > 0) {
+        int BlessingOfWisdom = getLevel(utensile, "BlessingOfWisdom");
+        if (BlessingOfWisdom > 0) {
             double incremento = getDouble("Runes.BlessingOfWisdom.effects.increase");
-            double exp = increase(incremento, level, originalExp);
+            double exp = increase(incremento, BlessingOfWisdom, originalExp);
             expSetter.accept(exp);
             if (getBoolConfig("DEBUG")) {
                 player.sendMessage("§a[SmartRunes] Gained " + originalExp + " + " + String.format("%.1f", (exp - originalExp)) + " XP");
@@ -509,7 +498,6 @@ public class Events implements Listener {
     public void ExpertExtraction(BlockBreakEvent event) {
         Player player = event.getPlayer();
         ItemStack tool = player.getInventory().getItemInMainHand();
-        if (checkItems(tool, "ExpertExtraction")) return;
         int level = getLevel(tool, "ExpertExtraction");
         if (level <= 0) return;
         Block startBlock = event.getBlock();
@@ -574,9 +562,18 @@ public class Events implements Listener {
         if (!(event.getEntity() instanceof Arrow arrow)) return;
         if (!(arrow.getShooter() instanceof Player player)) return;
         ItemStack arco = player.getInventory().getItemInMainHand();
-        if (checkItems(arco, "EnderShot")) return;
         int level = getLevel(arco, "EnderShot");
         if (level <= 0) return;
+        long currentTime = System.currentTimeMillis();
+        if (lastShotTimes.containsKey(player)) {
+            long lastShotTime = lastShotTimes.get(player);
+            long timeDifference = currentTime - lastShotTime;
+            long attesa = 1000L * getInt("Runes.EnderShot.effects.timeout");
+            if (timeDifference < attesa) {
+                return;
+            }
+        }
+        lastShotTimes.put(player, currentTime);
         Location hitLocation = arrow.getLocation().clone().add(0, 1, 0);
         new BukkitRunnable() {
             @Override
@@ -653,34 +650,10 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void AntiGravThrow(EntityDamageByEntityEvent event) {
-        Player player = null;
-        if (event.getDamager() instanceof Player p) {
-            player = p;
-        } else if (event.getDamager() instanceof Projectile projectile) {
-            if (projectile.getShooter() instanceof Player p) {
-                player = p;
-            }
-        }
-        if (player == null) return;
-        if (!(event.getEntity() instanceof LivingEntity target)) return;
-        ItemStack utensile = player.getInventory().getItemInMainHand();
-        if (!utensile.hasItemMeta()) return;
-        if (checkItems(utensile, "AntiGravThrow")) return;
-        int level = getLevel(utensile, "AntiGravThrow");
-        if (level <= 0) return;
-        double blocchi = getDouble("Runes.AntiGravThrow.effects.increase") * level + 2;
-        double yVelocity = Math.sqrt(2 * 0.08 * blocchi);
-        Vector dir = new Vector(0, yVelocity, 0);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> target.setVelocity(dir), 1L);
-    }
-
-    @EventHandler
     public void ExpertMining(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (checkItems(item, "ExpertMining")) return;
         int level = getLevel(item, "ExpertMining");
         if (level <= 0) return;
         float blockHardness = block.getType().getHardness();
@@ -807,7 +780,6 @@ public class Events implements Listener {
         if (event.getCause() != EntityDamageEvent.DamageCause.DROWNING) return;
         ItemStack helmet = player.getInventory().getHelmet();
         if (helmet == null || helmet.getType() == Material.AIR) return;
-        if (checkItems(helmet, "LittleFish")) return;
         int level = getLevel(helmet, "LittleFish");
         if (level <= 0) return;
         event.setCancelled(true);
@@ -818,35 +790,9 @@ public class Events implements Listener {
     public void MinersEyes(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         ItemStack helmet = player.getInventory().getHelmet();
-        if (helmet == null || helmet.getType() == Material.AIR) return;
-        if (checkItems(helmet, "MinersEyes")) return;
-        ItemMeta meta = helmet.getItemMeta();
-        if (meta == null) return;
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        NamespacedKey key = new NamespacedKey("smartrunes", "minerseyes");
-        int level = data.getOrDefault(key, PersistentDataType.INTEGER, 0);
+        int level = getLevel(helmet, "MinersEyes");
         if (level <= 0) return;
         player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 400, 0, false, false, false));
-
-    }
-
-    @EventHandler
-    public void OceansSting(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player player)) return;
-        if (!(event.getEntity() instanceof LivingEntity target)) return;
-        ItemStack arma = player.getInventory().getItemInMainHand();
-        if (checkItems(arma, "OceansSting")) return;
-        int livello = getLevel(arma, "OceansSting");
-        if (livello <= 0) return;
-        EntityType type = target.getType();
-        List<String> mobs = getList("Runes.OceansSting.effects.mobs");
-        for (String mob : mobs) {
-            if (type.name().equalsIgnoreCase(mob)) {
-                double danno = event.getDamage();
-                double extraDamage = increase(getInt("Runes.OceansSting.applied-to"), livello, danno);
-                event.setDamage(extraDamage);
-            }
-        }
     }
 
     @EventHandler
@@ -854,9 +800,6 @@ public class Events implements Listener {
         if (!(event.getEntity() instanceof Player player)) return;
         if (event.getConsumable() != null && event.getConsumable().getType() == Material.ARROW) {
             ItemStack arco = event.getBow();
-            if (arco == null) return;
-            if (!arco.hasItemMeta()) return;
-            if (checkItems(arco, "PhantomArrow")) return;
             int level = getLevel(arco, "PhantomArrow");
             if (level <= 0) return;
             double incremento = getDouble("Runes.PhantomArrow.effects.increase") * 0.01;
@@ -868,56 +811,10 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void PhantomStrike(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player player)) return;
-        if (!(event.getEntity() instanceof LivingEntity target)) return;
-        ItemStack weapon = player.getInventory().getItemInMainHand();
-        if (checkItems(weapon, "PhantomStrike")) return;
-        int level = getLevel(weapon, "PhantomStrike");
-        if (level <= 0) return;
-        double baseDamage = event.getDamage();
-        double chance = level * getDouble("Runes.PhantomStrike.effects.increase") * 0.01;
-        if (Math.random() <= chance) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (!target.isDead()) {
-                    target.damage(baseDamage);
-                }
-            }, 20L);
-        }
-    }
-
-    @EventHandler
-    public void WildMagicStrike(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player player)) return;
-        if (!(event.getEntity() instanceof LivingEntity target)) return;
-        ItemStack weapon = player.getInventory().getItemInMainHand();
-        if (checkItems(weapon, "WildMagicStrike")) return;
-        int level = getLevel(weapon, "WildMagicStrike");
-        if (level <= 0) return;
-        double incremento = getDouble("Runes.WildMagicStrike.effects.increase") * 0.01;
-        if (Math.random() <= incremento * level) {
-            PotionEffectType[] negativeEffects = {
-                    PotionEffectType.POISON,
-                    PotionEffectType.SLOWNESS,
-                    PotionEffectType.WEAKNESS,
-                    PotionEffectType.BLINDNESS,
-                    PotionEffectType.WITHER,
-                    PotionEffectType.DARKNESS,
-                    PotionEffectType.INSTANT_DAMAGE,
-                    PotionEffectType.LEVITATION,
-                    PotionEffectType.NAUSEA
-            };
-            PotionEffectType randomEffect = negativeEffects[(int) (Math.random() * negativeEffects.length)];
-            target.addPotionEffect(new PotionEffect(randomEffect, 100, 1)); // 5 secondi, livello 2
-        }
-    }
-
-    @EventHandler
     public void TreeAntiHugger(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (checkItems(item, "TreeAntiHugger")) return;
         int level = getLevel(item, "TreeAntiHugger");
         if (level <= 0) return;
         List<String> logs = getList("Runes.TreeAntiHugger.effects.logs");
@@ -985,7 +882,6 @@ public class Events implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
         ItemStack tool = player.getInventory().getItemInMainHand();
-        if (checkItems(tool, "ResonatingHit")) return;
         int level = getLevel(tool, "ResonatingHit");
         if (level <= 0) return;
         List<Material> ores = Arrays.asList(
@@ -1028,47 +924,9 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void PackAlpha(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player player)) return;
-        if (!(event.getEntity() instanceof LivingEntity target)) return;
-        UUID uuid = player.getUniqueId();
-        List<Wolf> wolves = playerWolves.getOrDefault(uuid, new ArrayList<>());
-        wolves.removeIf(w -> w.isDead() || !w.isValid());
-        ItemStack weapon = player.getInventory().getItemInMainHand();
-        if (checkItems(weapon, "PackAlpha")) return;
-        int level = getLevel(weapon, "PackAlpha");
-        if (level <= 0) return;
-        if (wolves.size() >= level) return;
-        if (Math.random() <= 0.10) {
-            long count = player.getWorld().getEntitiesByClass(Wolf.class).stream()
-                    .filter(w -> w.isTamed() && w.getOwner() != null && w.getOwner().getUniqueId().equals(player.getUniqueId()))
-                    .count();
-            if (count >= level) return;
-            Wolf wolf = (Wolf) player.getWorld().spawnEntity(player.getLocation(), EntityType.WOLF);
-            double heal = getDouble("Runes.PackAlpha.effects.wolf-heal");
-            Objects.requireNonNull(wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(heal);
-            wolf.setHealth(heal);
-            wolf.setTarget(target);
-            wolves.add(wolf);
-            playerWolves.put(uuid, wolves);
-            long delay = getLong("Runes.PackAlpha.effects.wolf-time");
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (!wolf.isDead()) {
-                        wolf.remove();
-                        wolves.remove(wolf);
-                    }
-                }
-            }.runTaskLater(plugin, 20 * delay);
-        }
-    }
-
-    @EventHandler
     public void ThoroughInspection1(BlockBreakEvent event) {
         Block block = event.getBlock();
         ItemStack type = event.getPlayer().getInventory().getHelmet();
-        if (checkItems(type, "ThoroughInspection")) return;
         int level = getLevel(type, "ThoroughInspection");
         if (level <= 0) return;
         if ((block.getBlockData() instanceof Ageable ageable)) {
@@ -1093,7 +951,6 @@ public class Events implements Listener {
         Player player = event.getEntity().getKiller();
         if (player == null) return;
         ItemStack type = player.getInventory().getItemInMainHand();
-        if (checkItems(type, "ThoroughInspection")) return;
         int level = getLevel(type, "ThoroughInspection");
         if (level <= 0) return;
         double chance = getInt("Runes.ThoroughInspection.effects.increase") * 0.01;
@@ -1103,8 +960,207 @@ public class Events implements Listener {
         }
     }
 
+    @EventHandler
+    public void HitMobs(EntityDamageByEntityEvent event) {
+        Player player;
+        if (event.getDamager() instanceof Player p) {
+            player = p;
+        } else if (event.getDamager() instanceof Projectile projectile) {
+            if (projectile.getShooter() instanceof Player p) {
+                player = p;
+            } else {
+                player = null;
+            }
+        } else {
+            player = null;
+        }
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        if (player == null) return;
+        ItemStack item = player.getInventory().getItemInMainHand();
+        int OceansSting = getLevel(item, "OceansSting");
+        int AntiGravThrow = getLevel(item, "AntiGravThrow");
+        int PackAlpha = getLevel(item, "PackAlpha");
+        int PhantomStrike = getLevel(item, "PhantomStrike");
+        int WildMagicStrike = getLevel(item, "WildMagicStrike");
+        if (OceansSting > 0) {
+            EntityType type = target.getType();
+            List<String> mobs = getList("Runes.OceansSting.effects.mobs");
+            for (String mob : mobs) {
+                if (type.name().equalsIgnoreCase(mob)) {
+                    double danno = event.getDamage();
+                    double extraDamage = increase(getInt("Runes.OceansSting.applied-to"), OceansSting, danno);
+                    event.setDamage(extraDamage);
+                }
+            }
+        }
+        if (AntiGravThrow > 0) {
+            double blocchi = getDouble("Runes.AntiGravThrow.effects.increase") * AntiGravThrow + 2;
+            double yVelocity = Math.sqrt(2 * 0.08 * blocchi);
+            Vector dir = new Vector(0, yVelocity, 0);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> target.setVelocity(dir), 1L);
+        }
+        if (PackAlpha > 0) {
+            UUID uuid = player.getUniqueId();
+            List<Wolf> wolves = playerWolves.getOrDefault(uuid, new ArrayList<>());
+            wolves.removeIf(w -> w.isDead() || !w.isValid());
+            if (wolves.size() >= PackAlpha) return;
+            if (Math.random() <= 0.10) {
+                long count = player.getWorld().getEntitiesByClass(Wolf.class).stream()
+                        .filter(w -> w.isTamed() && w.getOwner() != null && w.getOwner().getUniqueId().equals(player.getUniqueId()))
+                        .count();
+                if (count >= PackAlpha) return;
+                Wolf wolf = (Wolf) player.getWorld().spawnEntity(player.getLocation(), EntityType.WOLF);
+                double heal = getDouble("Runes.PackAlpha.effects.wolf-heal");
+                Objects.requireNonNull(wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(heal);
+                wolf.setHealth(heal);
+                wolf.setTarget(target);
+                wolves.add(wolf);
+                playerWolves.put(uuid, wolves);
+                long delay = getLong("Runes.PackAlpha.effects.wolf-time");
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (!wolf.isDead()) {
+                            wolf.remove();
+                            wolves.remove(wolf);
+                        }
+                    }
+                }.runTaskLater(plugin, 20 * delay);
+            }
+        }
+        if (PhantomStrike > 0) {
+            double baseDamage = event.getDamage();
+            double chance = PhantomStrike * getDouble("Runes.PhantomStrike.effects.increase") * 0.01;
+            if (Math.random() <= chance) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (!target.isDead()) {
+                        target.damage(baseDamage);
+                    }
+                }, 20L);
+            }
+        }
+        if (WildMagicStrike > 0) {
+            double incremento = getDouble("Runes.WildMagicStrike.effects.increase") * 0.01;
+            if (Math.random() <= incremento * WildMagicStrike) {
+                PotionEffectType[] negativeEffects = {
+                        PotionEffectType.POISON,
+                        PotionEffectType.SLOWNESS,
+                        PotionEffectType.WEAKNESS,
+                        PotionEffectType.BLINDNESS,
+                        PotionEffectType.WITHER,
+                        PotionEffectType.DARKNESS,
+                        PotionEffectType.INSTANT_DAMAGE,
+                        PotionEffectType.LEVITATION,
+                        PotionEffectType.NAUSEA
+                };
+                PotionEffectType randomEffect = negativeEffects[(int) (Math.random() * negativeEffects.length)];
+                target.addPotionEffect(new PotionEffect(randomEffect, 100, 1)); // 5 secondi, livello 2
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSmithingPrepare(PrepareSmithingEvent event) {
+        ItemStack template = event.getInventory().getItem(0);
+        if (template == null || !template.hasItemMeta()) return;
+        for (String[] runes : runesParameters) {
+            if (getLevel(template, runes[1]) > 0) {
+                event.setResult(null);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onAnvilPrepare(PrepareAnvilEvent event) {
+        ItemStack left = event.getInventory().getItem(0); // primo slot
+        ItemStack right = event.getInventory().getItem(1); // secondo slot
+        if (left == null && right == null) return;
+        for (String[] runes : runesParameters) {
+            if ((left != null && getLevel(left, runes[1]) > 0) || (right != null && getLevel(right, runes[1]) > 0)) {
+                event.setResult(null); // annulla il risultato
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPrepareGrindstone(PrepareGrindstoneEvent event) {
+        ItemStack firstItem = event.getInventory().getItem(0);
+        ItemStack secondItem = event.getInventory().getItem(1);
+        ItemStack itemToClean = new ItemStack(Material.AIR);
+        boolean first = false;
+        boolean second = false;
+        for (String[] runes : runesParameters){
+            if(getLevel(firstItem, runes[1]) > 0 ){
+                first = true;
+            }
+            if(getLevel(secondItem, runes[1]) > 0 ){
+                second = true;
+            }
+        }
+        if(first && second) return;
+        if(!first && !second) return;
+        if(first && (secondItem == null || secondItem.getType() == Material.AIR)){
+            itemToClean = firstItem;
+        } else if(second && (firstItem == null || firstItem.getType() == Material.AIR)){
+            itemToClean = secondItem;
+        } else {
+            event.setResult(null);
+        }
+        boolean result = false;
+        for (String[] runes : runesParameters) {
+            if (getLevel(itemToClean, runes[1]) > 0) {
+                result = true;
+            }
+        }
+        if (result) {
+            if(itemToClean != null) {
+                Material mat = itemToClean.getType();
+                ItemStack item = new ItemStack(mat);
+                event.setResult(item);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        if (event.getInventory().getType() == InventoryType.GRINDSTONE) {
+            GrindstoneInventory grindstoneInventory = (GrindstoneInventory) event.getInventory();
+            int slotClicked = event.getSlot();
+            if (slotClicked == 2) {
+                ItemStack resultItem = event.getCurrentItem();
+                if (resultItem != null && resultItem.getType() != Material.AIR) {
+                    ItemStack firstInput = grindstoneInventory.getItem(0);
+                    ItemStack secondInput = grindstoneInventory.getItem(1);
+                    ItemStack itemToClean = (firstInput != null) ? firstInput : secondInput;
+                    Block grindstoneBlock = Objects.requireNonNull(grindstoneInventory.getLocation()).getBlock();
+                    Location grindstoneLocation = grindstoneBlock.getLocation();
+                    Location dropLocation = grindstoneLocation.clone().add(0.5, 1.0, 0.5); // Sposta leggermente il punto di drop
+                    if (Math.random() <= 0.02) {
+                        event.setCurrentItem(null);
+                        grindstoneInventory.setItem(0, null);
+                        grindstoneInventory.setItem(1, null);
+                        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+                        player.closeInventory();
+                    }
+                    int index = 0;
+                    for (String[] rune : runesParameters) {
+                        int level = getLevel(itemToClean, rune[1]);
+                        if (level > 0) {
+                            player.getWorld().dropItem(dropLocation, rune(rune[1], 20.0, index, level));
+                        }
+                        index++;
+                    }
+                }
+            }
+        }
+    }
+
+
     public boolean checkItems(ItemStack item, String rune) {
-        if (item != null) {
+        if (item != null && item.getType() != Material.AIR) {
             if (getBool("Runes." + rune + ".enable")) {
                 List<String> lista = getList("Runes." + rune + ".applied-to");
                 for (String s : lista) {
@@ -1118,7 +1174,7 @@ public class Events implements Listener {
     }
 
     public int getLevel(ItemStack item, String rune) {
-        if (item != null) {
+        if (item != null && item.getType() != Material.AIR) {
             if (item.hasItemMeta()) {
                 ItemMeta meta = item.getItemMeta();
                 PersistentDataContainer data = meta.getPersistentDataContainer();
@@ -1127,6 +1183,22 @@ public class Events implements Listener {
             }
         }
         return 0;
+    }
+
+    public boolean filterRune(Player player, ItemStack cursor, String id1, ItemStack target, String id2) {
+        if (getLevel(cursor, id1) > 0 && getLevel(target, id2) > 0) {
+            if (id1.equalsIgnoreCase("DivineHandiwork")) {
+                String message1 = Objects.requireNonNull(getStringConfig("message.msg4"));
+                player.sendMessage(message1);
+            } else {
+                String message = Objects.requireNonNull(getStringConfig("message.msg3"))
+                        .replace("%rune1%", id1)
+                        .replace("%rune2%", id2);
+                player.sendMessage(message);
+            }
+            return true;
+        }
+        return false;
     }
 
 }
