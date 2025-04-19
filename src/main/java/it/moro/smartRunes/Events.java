@@ -94,6 +94,8 @@ public class Events implements Listener {
         if (filterRune(player, cursor, "DivineHandiwork", target, "EnderShot")) return;
         if (filterRune(player, cursor, "DivineHandiwork", target, "HeavyStrike")) return;
         if (filterRune(player, cursor, "DivineHandiwork", target, "PiercingStrike")) return;
+        if (filterRune(player, cursor, "ExpertExtraction", target, "ExpertMining")) return;
+        if (filterRune(player, cursor, "ExpertMining", target, "ExpertExtraction")) return;
 
         boolean applicabile = checkItems(target, array[index][1]);
         if (applicabile) return;
@@ -494,54 +496,6 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
-    public void ExpertExtraction(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        ItemStack tool = player.getInventory().getItemInMainHand();
-        int level = getLevel(tool, "ExpertExtraction");
-        if (level <= 0) return;
-        Block startBlock = event.getBlock();
-        if (!isSupportedOre(startBlock.getType())) return;
-        Set<Block> vein = getConnectedOres(startBlock);
-        for (Block block : vein) {
-            block.breakNaturally(tool);
-            damageTool(tool, player);
-        }
-        event.setCancelled(true);
-    }
-
-    private boolean isSupportedOre(Material type) {
-        return switch (type) {
-            case COAL_ORE, IRON_ORE, COPPER_ORE, GOLD_ORE,
-                 REDSTONE_ORE, LAPIS_ORE, DIAMOND_ORE, EMERALD_ORE,
-                 DEEPSLATE_COAL_ORE, DEEPSLATE_IRON_ORE, DEEPSLATE_COPPER_ORE,
-                 DEEPSLATE_GOLD_ORE, DEEPSLATE_REDSTONE_ORE, DEEPSLATE_LAPIS_ORE,
-                 DEEPSLATE_DIAMOND_ORE, DEEPSLATE_EMERALD_ORE -> true;
-            default -> false;
-        };
-    }
-
-    private Set<Block> getConnectedOres(Block start) {
-        Set<Block> result = new HashSet<>();
-        Queue<Block> toCheck = new LinkedList<>();
-        toCheck.add(start);
-        while (!toCheck.isEmpty() && result.size() < getInt("Runes.ExpertExtraction.effects.max-blocks")) {
-            Block current = toCheck.poll();
-            if (current != null) {
-                if (!result.contains(current) && current.getType() == start.getType()) {
-                    result.add(current);
-                    for (BlockFace face : BlockFace.values()) {
-                        Block adjacent = current.getRelative(face);
-                        if (adjacent.getType() == start.getType()) {
-                            toCheck.add(adjacent);
-                        }
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
     private void damageTool(ItemStack tool, Player player) {
         if (tool == null || tool.getType() == Material.AIR) return;
         ItemMeta meta = tool.getItemMeta();
@@ -561,6 +515,7 @@ public class Events implements Listener {
     public void EnderShot(ProjectileHitEvent event) {
         if (!(event.getEntity() instanceof Arrow arrow)) return;
         if (!(arrow.getShooter() instanceof Player player)) return;
+        if (event.getHitEntity() != null) return;
         ItemStack arco = player.getInventory().getItemInMainHand();
         int level = getLevel(arco, "EnderShot");
         if (level <= 0) return;
@@ -580,6 +535,7 @@ public class Events implements Listener {
             public void run() {
                 player.teleport(hitLocation);
                 player.playSound(hitLocation, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
+                arrow.remove();
             }
         }.runTaskLater(plugin, 1);
     }
@@ -647,33 +603,6 @@ public class Events implements Listener {
                 }
             }
         }
-    }
-
-    @EventHandler
-    public void ExpertMining(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        ItemStack item = player.getInventory().getItemInMainHand();
-        int level = getLevel(item, "ExpertMining");
-        if (level <= 0) return;
-        float blockHardness = block.getType().getHardness();
-        boolean isValidBlock = blockHardness <= 1.0f || item.getType().toString().contains("_PICKAXE");
-        if (!isValidBlock) return;
-        int radius = level == 1 ? 1 : 2;
-        Location blockLocation = block.getLocation();
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    Location location = blockLocation.clone().add(x, y, z);
-                    Block surroundingBlock = location.getBlock();
-                    if (!surroundingBlock.equals(block) && surroundingBlock.getType() == block.getType()) {
-                        surroundingBlock.breakNaturally(item);
-                        damageTool(item, player);
-                    }
-                }
-            }
-        }
-
     }
 
     @EventHandler
@@ -874,52 +803,6 @@ public class Events implements Listener {
                 }
             }
             count++;
-        }
-    }
-
-    @EventHandler
-    public void ResonatingHit(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        ItemStack tool = player.getInventory().getItemInMainHand();
-        int level = getLevel(tool, "ResonatingHit");
-        if (level <= 0) return;
-        List<Material> ores = Arrays.asList(
-                Material.IRON_ORE, Material.GOLD_ORE, Material.COPPER_ORE,
-                Material.DEEPSLATE_IRON_ORE, Material.DEEPSLATE_GOLD_ORE, Material.DEEPSLATE_COPPER_ORE,
-                Material.NETHER_GOLD_ORE
-        );
-        if (!ores.contains(block.getType())) return;
-        double incremento = getInt("Runes.ResonatingHit.effects.increase") * 0.01;
-        if (Math.random() <= incremento * level) {
-            event.setDropItems(false);
-            Collection<ItemStack> drops = block.getDrops(tool);
-            for (ItemStack drop : drops) {
-                int amount = drop.getAmount();
-                switch (drop.getType()) {
-                    case RAW_IRON -> {
-                        ItemStack iron = new ItemStack(Material.IRON_INGOT);
-                        iron.setAmount(amount);
-                        drop = iron;
-                    }
-                    case RAW_GOLD -> {
-                        ItemStack gold = new ItemStack(Material.GOLD_INGOT);
-                        gold.setAmount(amount);
-                        drop = gold;
-                    }
-                    case RAW_COPPER -> {
-                        ItemStack copper = new ItemStack(Material.COPPER_INGOT);
-                        copper.setAmount(amount);
-                        drop = copper;
-                    }
-                    case NETHER_GOLD_ORE -> {
-                        ItemStack nether = new ItemStack(Material.GOLD_INGOT);
-                        nether.setAmount(amount);
-                        drop = nether;
-                    }
-                }
-                block.getWorld().dropItemNaturally(block.getLocation(), drop);
-            }
         }
     }
 
@@ -1158,6 +1041,123 @@ public class Events implements Listener {
         }
     }
 
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        ItemStack tool = player.getInventory().getItemInMainHand();
+        Block block = event.getBlock();
+        int expertExtraction = getLevel(tool, "ExpertExtraction");
+        int expertMining = getLevel(tool, "ExpertMining");
+        int resonatingHit = getLevel(tool, "ResonatingHit");
+        if(expertExtraction > 0){
+            if (!isSupportedOre(block.getType())) return;
+            Set<Block> vein = getConnectedOres(block);
+            for (Block block1 : vein) {
+                if(resonatingHit > 0){
+                    for (ItemStack drop : block1.getDrops(tool)) {
+                        ItemStack newDrop = switch (drop.getType()) {
+                            case RAW_IRON -> new ItemStack(Material.IRON_INGOT, drop.getAmount());
+                            case RAW_GOLD, NETHER_GOLD_ORE -> new ItemStack(Material.GOLD_INGOT, drop.getAmount());
+                            case RAW_COPPER -> new ItemStack(Material.COPPER_INGOT, drop.getAmount());
+                            default -> drop;
+                        };
+                        block1.getWorld().dropItemNaturally(block1.getLocation(), newDrop);
+                        block1.setType(Material.AIR);
+                        damageTool(tool, player);
+                    }
+                } else {
+                    block1.breakNaturally(tool);
+                    damageTool(tool, player);
+                }
+            }
+            event.setCancelled(true);
+        } else if (expertMining > 0) {
+            float blockHardness = block.getType().getHardness();
+            boolean isValidBlock = blockHardness <= 1.0f || tool.getType().toString().contains("_PICKAXE");
+            if (!isValidBlock) return;
+            int radius = expertMining == 1 ? 1 : 2;
+            Location blockLocation = block.getLocation();
+            List<Block> blocksToBreak = new ArrayList<>();
+            blocksToBreak.add(block);
+            for (int x = -radius; x <= radius; x++) {
+                for (int y = -radius; y <= radius; y++) {
+                    for (int z = -radius; z <= radius; z++) {
+                        Location location = blockLocation.clone().add(x, y, z);
+                        Block surroundingBlock = location.getBlock();
+                        if (!surroundingBlock.equals(block) && surroundingBlock.getType() == block.getType()) {
+                            blocksToBreak.add(surroundingBlock);
+                        }
+                    }
+                }
+            }
+            for (Block b : blocksToBreak) {
+                if (resonatingHit > 0) {
+                    for (ItemStack drop : b.getDrops(tool)) {
+                        ItemStack newDrop = switch (drop.getType()) {
+                            case RAW_IRON -> new ItemStack(Material.IRON_INGOT, drop.getAmount());
+                            case RAW_GOLD, NETHER_GOLD_ORE -> new ItemStack(Material.GOLD_INGOT, drop.getAmount());
+                            case RAW_COPPER -> new ItemStack(Material.COPPER_INGOT, drop.getAmount());
+                            default -> drop;
+                        };
+                        b.getWorld().dropItemNaturally(b.getLocation(), newDrop);
+                    }
+                    b.setType(Material.AIR);
+                } else {
+                    b.breakNaturally(tool);
+                }
+                damageTool(tool, player);
+            }
+            event.setCancelled(true);
+        } else {
+            if (resonatingHit > 0) {
+                for (ItemStack drop : block.getDrops(tool)) {
+                    ItemStack newDrop = switch (drop.getType()) {
+                        case RAW_IRON -> new ItemStack(Material.IRON_INGOT, drop.getAmount());
+                        case RAW_GOLD, NETHER_GOLD_ORE -> new ItemStack(Material.GOLD_INGOT, drop.getAmount());
+                        case RAW_COPPER -> new ItemStack(Material.COPPER_INGOT, drop.getAmount());
+                        default -> drop;
+                    };
+                    block.getWorld().dropItemNaturally(block.getLocation(), newDrop);
+                }
+                block.setType(Material.AIR);
+                damageTool(tool, player);
+                event.setCancelled(true);
+            }
+        }
+
+    }
+
+    private boolean isSupportedOre(Material type) {
+        return switch (type) {
+            case COAL_ORE, IRON_ORE, COPPER_ORE, GOLD_ORE,
+                 REDSTONE_ORE, LAPIS_ORE, DIAMOND_ORE, EMERALD_ORE,
+                 DEEPSLATE_COAL_ORE, DEEPSLATE_IRON_ORE, DEEPSLATE_COPPER_ORE,
+                 DEEPSLATE_GOLD_ORE, DEEPSLATE_REDSTONE_ORE, DEEPSLATE_LAPIS_ORE,
+                 DEEPSLATE_DIAMOND_ORE, DEEPSLATE_EMERALD_ORE -> true;
+            default -> false;
+        };
+    }
+
+    private Set<Block> getConnectedOres(Block start) {
+        Set<Block> result = new HashSet<>();
+        Queue<Block> toCheck = new LinkedList<>();
+        toCheck.add(start);
+        while (!toCheck.isEmpty() && result.size() < getInt("Runes.ExpertExtraction.effects.max-blocks")) {
+            Block current = toCheck.poll();
+            if (current != null) {
+                if (!result.contains(current) && current.getType() == start.getType()) {
+                    result.add(current);
+                    for (BlockFace face : BlockFace.values()) {
+                        Block adjacent = current.getRelative(face);
+                        if (adjacent.getType() == start.getType()) {
+                            toCheck.add(adjacent);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
     public boolean checkItems(ItemStack item, String rune) {
         if (item != null && item.getType() != Material.AIR) {

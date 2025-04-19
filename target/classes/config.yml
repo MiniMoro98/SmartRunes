@@ -3,3 +3,5 @@ DEBUG: true
 message:
   msg1: "&a[SmartRunes] You have already reached the maximum level for this rune!"
   msg2: "&a[SmartRunes] The item already has a higher level for this rune!"
+  msg3: "&c[SmartRunes] You cannot assign %rune1% to %rune2%"
+  msg4: "&c[SmartRunes] WARNING: Divine Handiwork cannot overlap with Anti-Grav Throw, Crippling Blow, Ender Shot, Heavy Strike, or Piercing Strike."
